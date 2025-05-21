@@ -1,0 +1,14 @@
+EST API Design
+
+Authentication
+POST /api/auth/login
+POST /api/auth/logout
+Admin Routes
+POST   /api/admin/books       // Add book
+GET    /api/admin/books       // View all books
+User Routes
+GET    /api/books             // Get all books (with optional search, filter)
+POST   /api/user/books        // Add book to user list
+PATCH  /api/user/books/:id    // Update reading status
+POST   /api/user/share        // Share book to another user
+GET    /api/user/my-books     // View user's book list
