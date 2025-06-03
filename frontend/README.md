@@ -1,70 +1,216 @@
-# Getting Started with Create React App
+# Book Review App Frontend
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+The frontend application for the Book Review App, built with React and Material-UI.
 
-## Available Scripts
+## Prerequisites
 
-In the project directory, you can run:
+- Node.js (v14 or higher)
+- npm or yarn
 
-### `npm start`
+## Setup
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+1. Install dependencies:
+```bash
+npm install
+```
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+2. Start the development server:
+```bash
+npm start
+```
 
-### `npm test`
+The application will start on http://localhost:3000
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Project Structure
 
-### `npm run build`
+```
+frontend/
+├── public/
+│   ├── index.html
+│   └── favicon.ico
+└── src/
+    ├── components/
+    │   ├── auth/
+    │   │   ├── Login.js
+    │   │   └── Register.js
+    │   ├── books/
+    │   │   ├── BookList.js
+    │   │   ├── BookDetail.js
+    │   │   └── AddBook.js
+    │   ├── reviews/
+    │   │   └── AddReview.js
+    │   ├── favorites/
+    │   │   └── Favorites.js
+    │   ├── Navbar.js
+    │   └── Dashboard.js
+    ├── context/
+    │   └── AuthContext.js
+    ├── App.js
+    └── index.js
+```
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Components
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Authentication Components
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+#### Login
+- Handles user login
+- Form fields: email and password
+- Redirects to dashboard on successful login
 
-### `npm run eject`
+#### Register
+- Handles user registration
+- Form fields: name, email, and password
+- Redirects to login on successful registration
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+### Book Components
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+#### BookList
+- Displays grid of all books
+- Shows book cover, title, author, and average rating
+- Clickable cards to view book details
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+#### BookDetail
+- Shows detailed information about a book
+- Displays book cover, title, author
+- Shows all reviews for the book
+- Allows adding/removing from favorites
+- Option to write a review
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+#### AddBook
+- Form to add new books
+- Fields: title, author, cover image
+- File upload for book cover
 
-## Learn More
+### Review Components
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+#### AddReview
+- Form to write a book review
+- Fields: rating (0-5), read date, review text
+- Rating component with half-star precision
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### Favorite Components
 
-### Code Splitting
+#### Favorites
+- Displays user's favorite books
+- Grid layout with book cards
+- Option to remove from favorites
+- Clickable cards to view book details
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+### Navigation
 
-### Analyzing the Bundle Size
+#### Navbar
+- Responsive navigation bar
+- Shows different options based on authentication status
+- Links to all main sections of the app
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+### Dashboard
 
-### Making a Progressive Web App
+#### Dashboard
+- Main landing page for authenticated users
+- Overview of recent activity
+- Quick access to main features
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+## State Management
 
-### Advanced Configuration
+The application uses React Context for state management:
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+### AuthContext
+- Manages user authentication state
+- Provides login/logout functionality
+- Stores user information and JWT token
 
-### Deployment
+## API Integration
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+The frontend communicates with the backend API using Axios:
 
-### `npm run build` fails to minify
+- Base URL: http://localhost:5000
+- Authentication headers are automatically added to requests
+- Error handling with toast notifications
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## Styling
+
+The application uses Material-UI for styling:
+- Responsive design
+- Consistent theme across components
+- Custom styling using the `sx` prop
+- Dark/light mode support
+
+## Features
+
+1. User Authentication
+   - Login/Register forms
+   - Protected routes
+   - Persistent sessions
+
+2. Book Management
+   - View all books
+   - Book details
+   - Add new books
+   - Upload cover images
+
+3. Review System
+   - Write reviews
+   - Rate books
+   - View all reviews
+   - Sort and filter reviews
+
+4. Favorites
+   - Add/remove favorites
+   - View favorite books
+   - Quick access to favorite books
+
+## Error Handling
+
+- Form validation
+- API error handling
+- Toast notifications for success/error messages
+- Loading states for async operations
+
+## Responsive Design
+
+- Mobile-first approach
+- Responsive grid layouts
+- Adaptive navigation
+- Touch-friendly interfaces
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Development
+
+### Available Scripts
+
+- `npm start`: Runs the app in development mode
+- `npm test`: Launches the test runner
+- `npm run build`: Builds the app for production
+- `npm run eject`: Ejects from Create React App
+
+### Code Style
+
+- ESLint configuration included
+- Prettier formatting
+- Component-based architecture
+- Functional components with hooks
+
+## Deployment
+
+1. Build the application:
+```bash
+npm run build
+```
+
+2. The build folder contains the production-ready files
+3. Deploy the contents of the build folder to your hosting service
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request 
