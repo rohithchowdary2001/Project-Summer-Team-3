@@ -6,54 +6,148 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Components
-import Navbar from './components/Navbar';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
+import Login from './components/Login';
+import Register from './components/Register';
+import Navigation from './components/Navigation';
 import Dashboard from './components/Dashboard';
-import BookList from './components/books/BookList';
-import BookDetail from './components/books/BookDetail';
-import AddBook from './components/books/AddBook';
-import AddReview from './components/reviews/AddReview';
-import Favorites from './components/favorites/Favorites';
-
-// Context
-import { AuthProvider } from './context/AuthContext';
+import BookDetails from './components/BookDetails';
+import AddBook from './components/AddBook';
+import EditBook from './components/EditBook';
+import AdminDashboard from './components/AdminDashboard';
 
 const theme = createTheme({
   palette: {
-    mode: 'light',
     primary: {
-      main: '#1976d2',
+      main: '#4a90e2',
     },
     secondary: {
-      main: '#dc004e',
+      main: '#19857b',
     },
   },
 });
+
+// Protected Route Component
+const PrivateRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  return children;
+};
+
+// Admin Route Component
+const AdminRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
+  
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (user.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
+};
+
+// Public Route Component (redirects to dashboard if already logged in)
+const PublicRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  return children;
+};
 
 function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <AuthProvider>
-        <Router>
-          <Navbar />
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/books" element={<BookList />} />
-            <Route path="/books/:id" element={<BookDetail />} />
-            <Route path="/add-book" element={<AddBook />} />
-            <Route path="/books/:id/review" element={<AddReview />} />
-            <Route path="/favorites" element={<Favorites />} />
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-          <ToastContainer />
-        </Router>
-      </AuthProvider>
+      <Router>
+        <Routes>
+          <Route
+            path="/login"
+            element={
+              <PublicRoute>
+                <Login />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/register"
+            element={
+              <PublicRoute>
+                <Register />
+              </PublicRoute>
+            }
+          />
+          <Route
+            path="/"
+            element={
+              <Navigate to="/dashboard" replace />
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <PrivateRoute>
+                <>
+                  <Navigation />
+                  <Dashboard />
+                </>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/books/add"
+            element={
+              <PrivateRoute>
+                <>
+                  <Navigation />
+                  <AddBook />
+                </>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/books/:id"
+            element={
+              <PrivateRoute>
+                <>
+                  <Navigation />
+                  <BookDetails />
+                </>
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/books/:id/edit"
+            element={
+              <AdminRoute>
+                <>
+                  <Navigation />
+                  <EditBook />
+                </>
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin"
+            element={
+              <AdminRoute>
+                <>
+                  <Navigation />
+                  <AdminDashboard />
+                </>
+              </AdminRoute>
+            }
+          />
+        </Routes>
+      </Router>
+      <ToastContainer position="bottom-right" />
     </ThemeProvider>
   );
 }
 
-export default App;
+export default App; 

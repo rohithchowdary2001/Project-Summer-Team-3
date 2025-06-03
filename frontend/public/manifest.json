@@ -1,6 +1,6 @@
 {
-  "short_name": "Book Review",
-  "name": "Book Review Application",
+  "short_name": "Book Tracker",
+  "name": "Book Tracking Application",
   "icons": [
     {
       "src": "favicon.ico",
