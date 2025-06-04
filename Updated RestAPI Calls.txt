@@ -1,0 +1,57 @@
+Auth Routes
+
+Method	Endpoint	Description
+POST	/api/register	Register new user
+POST	/api/login	Login user/admin
+POST	/api/logout	Logout and log time
+
+
+User Routes
+GET	/api/users	Get all users (admin only)
+GET	/api/users/:id	Get user by ID
+PUT	/api/users/:id	Update user info
+DELETE	/api/users/:id	Delete user (admin only)
+
+Book Routes
+POST	/api/books	Add new book (user or admin)
+GET	/api/books	Get all books
+GET	/api/books/:id	Get book by ID
+PUT	/api/books/:id	Update book (admin only)
+DELETE	/api/books/:id	Delete book (admin only)
+
+
+Author Routes
+POST	/api/authors	Add author
+GET	/api/authors	Get all authors
+GET	/api/authors/:id	Get author by ID
+PUT	/api/authors/:id	Update author
+DELETE	/api/authors/:id	Delete author
+
+
+Genre Routes
+POST	/api/genres	Add genre
+GET	/api/genres	Get all genres
+GET	/api/genres/:id	Get genre by ID
+PUT	/api/genres/:id	Update genre
+DELETE	/api/genres/:id	Delete genre
+
+
+UserBookInteraction (Wishlist, Status, Review)
+POST	/api/userbooks	Add or update interaction
+GET	/api/userbooks	Get all interactions (admin)
+GET	/api/userbooks/:userId	Get interactions by user ID
+GET	/api/userbooks/book/:bookId	Get interactions by book ID
+DELETE	/api/userbooks/:userId/:bookId	Remove book from wishlist/reading
+
+
+Shared Link Routes
+POST	/api/shared-links	Generate link for a book
+GET	/api/shared-links/:token	Get shared book via token
+
+Review's
+POST	/api/reviews	Add or update a review	
+GET	/api/reviews/book/:bookId	Get all reviews for a specific book	
+GET	/api/reviews/user/:userId	Get all reviews written by a user
+GET	/api/reviews/:userId/:bookId	Get a specific review by user for a book
+PUT	/api/reviews	Update an existing review
+DELETE	/api/reviews	Delete a review by user and book
