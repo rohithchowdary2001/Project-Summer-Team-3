@@ -7,6 +7,22 @@ const UserBook = sequelize.define('UserBook', {
     primaryKey: true,
     autoIncrement: true
   },
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
+  },
+  bookId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Books',
+      key: 'id'
+    }
+  },
   readingStatus: {
     type: DataTypes.ENUM('not_started', 'in_progress', 'completed'),
     defaultValue: 'not_started'
@@ -31,8 +47,12 @@ const UserBook = sequelize.define('UserBook', {
 
 // Define associations in a separate function to avoid circular dependencies
 UserBook.associate = (models) => {
-  UserBook.belongsTo(models.User);
-  UserBook.belongsTo(models.Book);
+  UserBook.belongsTo(models.User, {
+    foreignKey: 'userId'
+  });
+  UserBook.belongsTo(models.Book, {
+    foreignKey: 'bookId'
+  });
 };
 
 module.exports = UserBook; 

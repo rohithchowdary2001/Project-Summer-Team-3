@@ -7,10 +7,8 @@ import {
   CardContent,
   CardMedia,
   Typography,
-  TextField,
   IconButton,
   Box,
-  InputAdornment,
   CardActions,
   Button,
   Dialog,
@@ -18,21 +16,17 @@ import {
   DialogContent,
   DialogActions,
   Alert,
-  Paper,
-  Divider,
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import ClearIcon from '@mui/icons-material/Clear';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import FavoriteIcon from '@mui/icons-material/Favorite';
 import ShareIcon from '@mui/icons-material/Share';
 import StoreIcon from '@mui/icons-material/Store';
 import axios from 'axios';
 
-const Dashboard = () => {
+const Favourites = () => {
   const navigate = useNavigate();
-  const [books, setBooks] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [favoriteBooks, setFavoriteBooks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [user, setUser] = useState(null);
@@ -45,34 +39,26 @@ const Dashboard = () => {
     setUser(userInfo);
   }, []);
 
-  const fetchBooks = async (query = '') => {
+  const fetchFavoriteBooks = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/books${query ? `?search=${query}` : ''}`, {
+      const response = await axios.get('http://localhost:5000/api/books/favorites', {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setBooks(response.data);
+      setFavoriteBooks(response.data);
       setError('');
     } catch (err) {
-      setError('Failed to fetch books');
-      console.error('Error fetching books:', err);
+      setError('Failed to fetch favorite books');
+      console.error('Error fetching favorite books:', err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBooks(searchQuery);
-  }, [searchQuery]);
-
-  const handleSearchChange = (event) => {
-    setSearchQuery(event.target.value);
-  };
-
-  const handleClearSearch = () => {
-    setSearchQuery('');
-  };
+    fetchFavoriteBooks();
+  }, []);
 
   const handleBookClick = (bookId) => {
     navigate(`/books/${bookId}`);
@@ -95,7 +81,7 @@ const Dashboard = () => {
       await axios.delete(`http://localhost:5000/api/books/${bookToDelete.id}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setBooks(books.filter(b => b.id !== bookToDelete.id));
+      setFavoriteBooks(favoriteBooks.filter(b => b.id !== bookToDelete.id));
       setDeleteDialogOpen(false);
       setBookToDelete(null);
     } catch (err) {
@@ -104,8 +90,20 @@ const Dashboard = () => {
     }
   };
 
-  const canModifyBook = (book) => {
-    return user?.role === 'admin' || book.createdBy === user?.id;
+  const handleRemoveFromFavorites = async (event, bookId) => {
+    event.stopPropagation();
+    try {
+      const token = localStorage.getItem('token');
+      await axios.post(`http://localhost:5000/api/books/${bookId}/status`, {
+        isWishlisted: false
+      }, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setFavoriteBooks(favoriteBooks.filter(b => b.id !== bookId));
+    } catch (err) {
+      setError('Failed to remove from favorites');
+      console.error('Error removing from favorites:', err);
+    }
   };
 
   const handleShare = async (event, bookId) => {
@@ -133,77 +131,16 @@ const Dashboard = () => {
     }
   };
 
-  const formatLastLogin = (lastLoginAt) => {
-    if (!lastLoginAt) return 'This is your first login! Welcome!';
-    
-    const loginDate = new Date(lastLoginAt);
-    const now = new Date();
-    const diffTime = Math.abs(now - loginDate);
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays === 0) {
-      return `Last login: Today at ${loginDate.toLocaleTimeString()}`;
-    } else if (diffDays === 1) {
-      return `Last login: Yesterday at ${loginDate.toLocaleTimeString()}`;
-    } else {
-      return `Last login: ${loginDate.toLocaleDateString()} at ${loginDate.toLocaleTimeString()}`;
-    }
-  };
-
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return 'Good morning';
-    if (hour < 17) return 'Good afternoon';
-    return 'Good evening';
+  const canModifyBook = (book) => {
+    return user?.role === 'admin' || book.createdBy === user?.id;
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      {/* Greeting Section */}
-      <Paper 
-        elevation={2} 
-        sx={{ 
-          p: 3, 
-          mb: 4, 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-          color: 'white',
-          borderRadius: 2
-        }}
-      >
-        <Typography variant="h4" component="h1" gutterBottom>
-          {getGreeting()}, {user?.username}! 📚
-        </Typography>
-        <Typography variant="body1" sx={{ opacity: 0.9 }}>
-          {formatLastLogin(user?.lastLoginAt)}
-        </Typography>
-        <Divider sx={{ my: 2, bgcolor: 'rgba(255,255,255,0.3)' }} />
-        <Typography variant="body2" sx={{ opacity: 0.8 }}>
-          Ready to discover your next great read? Browse through your collection or add a new book to get started.
-        </Typography>
-      </Paper>
-
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <TextField
-          sx={{ flexGrow: 1, mr: 2 }}
-          variant="outlined"
-          placeholder="Search books..."
-          value={searchQuery}
-          onChange={handleSearchChange}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-            endAdornment: searchQuery && (
-              <InputAdornment position="end">
-                <IconButton onClick={handleClearSearch} edge="end">
-                  <ClearIcon />
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+        <Typography variant="h4" component="h1">
+          My Favourite Books
+        </Typography>
         <Button
           variant="contained"
           color="primary"
@@ -220,7 +157,7 @@ const Dashboard = () => {
       )}
 
       <Grid container spacing={3}>
-        {books.map((book) => (
+        {favoriteBooks.map((book) => (
           <Grid item xs={12} sm={6} md={4} lg={3} key={book.id}>
             <Card
               sx={{
@@ -242,7 +179,7 @@ const Dashboard = () => {
                 alt={book.title}
                 sx={{ objectFit: 'cover' }}
               />
-              <CardContent>
+              <CardContent sx={{ flexGrow: 1 }}>
                 <Typography gutterBottom variant="h6" component="div" noWrap>
                   {book.title}
                 </Typography>
@@ -278,25 +215,33 @@ const Dashboard = () => {
                       <StoreIcon />
                     </IconButton>
                   )}
+                  {canModifyBook(book) && (
+                    <>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleEditBook(e, book.id)}
+                        title="Edit book"
+                      >
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton
+                        size="small"
+                        onClick={(e) => handleDeleteClick(e, book)}
+                        title="Delete book"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    </>
+                  )}
                 </Box>
-                {canModifyBook(book) && (
-                  <Box>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleEditBook(e, book.id)}
-                      title="Edit book"
-                    >
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      size="small"
-                      onClick={(e) => handleDeleteClick(e, book)}
-                      title="Delete book"
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </Box>
-                )}
+                <IconButton
+                  size="small"
+                  onClick={(e) => handleRemoveFromFavorites(e, book.id)}
+                  title="Remove from favorites"
+                  color="error"
+                >
+                  <FavoriteIcon />
+                </IconButton>
               </CardActions>
             </Card>
           </Grid>
@@ -305,13 +250,25 @@ const Dashboard = () => {
 
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Typography>Loading books...</Typography>
+          <Typography>Loading favorite books...</Typography>
         </Box>
       )}
 
-      {!loading && books.length === 0 && (
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Typography>No books found</Typography>
+      {!loading && favoriteBooks.length === 0 && (
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mt: 4 }}>
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No favorite books yet
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Start adding books to your favorites by clicking the heart icon on any book!
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate('/dashboard')}
+          >
+            Browse Books
+          </Button>
         </Box>
       )}
 
@@ -336,4 +293,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Favourites; 
