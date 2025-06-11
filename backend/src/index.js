@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const sequelize = require('./config/database');
 const path = require('path');
+const adminRoutes = require('./routes/admin.routes');
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use('/api/users', require('./routes/user.routes'));
 app.use('/api/reviews', require('./routes/review.routes'));
 app.use('/api/authors', require('./routes/author.routes'));
 app.use('/api/genres', require('./routes/genre.routes'));
+app.use('/api/admin', adminRoutes);
 
 const PORT = process.env.PORT || 5000;
 
