@@ -17,6 +17,7 @@ import {
   LibraryBooks,
   Add as AddIcon,
   AdminPanelSettings,
+  Favorite as FavoriteIcon,
 } from '@mui/icons-material';
 
 const Navigation = () => {
@@ -56,6 +57,7 @@ const Navigation = () => {
 
   const menuItems = [
     { label: 'Books', icon: <LibraryBooks />, path: '/dashboard' },
+    { label: 'Favourites', icon: <FavoriteIcon />, path: '/favourites' },
     { label: 'Add Book', icon: <AddIcon />, path: '/books/add' },
   ];
 

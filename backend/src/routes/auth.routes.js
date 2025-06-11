@@ -73,6 +73,12 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Get previous login time before updating
+    const previousLoginAt = user.lastLoginAt;
+
+    // Update last login time
+    await user.update({ lastLoginAt: new Date() });
+
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
       expiresIn: '24h'
     });
@@ -83,7 +89,8 @@ router.post('/login', async (req, res) => {
         id: user.id,
         username: user.username,
         email: user.email,
-        role: user.role
+        role: user.role,
+        lastLoginAt: previousLoginAt
       }
     });
   } catch (error) {

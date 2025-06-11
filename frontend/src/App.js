@@ -14,6 +14,7 @@ import BookDetails from './components/BookDetails';
 import AddBook from './components/AddBook';
 import EditBook from './components/EditBook';
 import AdminDashboard from './components/AdminDashboard';
+import Favourites from './components/Favourites';
 
 const theme = createTheme({
   palette: {
@@ -48,6 +49,19 @@ const AdminRoute = ({ children }) => {
     return <Navigate to="/dashboard" replace />;
   }
   
+  return children;
+};
+
+// Book Edit Route Component (allows admins and book creators)
+const BookEditRoute = ({ children }) => {
+  const token = localStorage.getItem('token');
+  
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // We'll do the specific permission check in the EditBook component itself
+  // since we need to fetch the book data to check ownership
   return children;
 };
 
@@ -100,6 +114,17 @@ function App() {
             }
           />
           <Route
+            path="/favourites"
+            element={
+              <PrivateRoute>
+                <>
+                  <Navigation />
+                  <Favourites />
+                </>
+              </PrivateRoute>
+            }
+          />
+          <Route
             path="/books/add"
             element={
               <PrivateRoute>
@@ -124,12 +149,12 @@ function App() {
           <Route
             path="/books/:id/edit"
             element={
-              <AdminRoute>
+              <BookEditRoute>
                 <>
                   <Navigation />
                   <EditBook />
                 </>
-              </AdminRoute>
+              </BookEditRoute>
             }
           />
           <Route

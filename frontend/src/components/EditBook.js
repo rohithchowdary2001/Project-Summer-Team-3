@@ -14,7 +14,11 @@ import {
   OutlinedInput,
   Chip,
   Alert,
+  Tabs,
+  Tab,
+  CircularProgress,
 } from '@mui/material';
+import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
 import axios from 'axios';
 
 const ITEM_HEIGHT = 48;
@@ -35,6 +39,7 @@ const EditBook = () => {
     title: '',
     description: '',
     coverImage: '',
+    storeLink: '',
     authors: [],
     genres: []
   });
@@ -42,6 +47,17 @@ const EditBook = () => {
   const [genres, setGenres] = useState([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [imageTab, setImageTab] = useState(0);
+  const [uploading, setUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+
+  useEffect(() => {
+    const userJson = localStorage.getItem('user');
+    if (userJson) {
+      setUser(JSON.parse(userJson));
+    }
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,10 +67,23 @@ const EditBook = () => {
         
         // Fetch book details
         const bookRes = await axios.get(`http://localhost:5000/api/books/${id}`, { headers });
+        
+        // Check if user has permission to edit this book
+        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+        const canEdit = currentUser.role === 'admin' || bookRes.data.createdBy === currentUser.id;
+        
+        if (!canEdit) {
+          setError('You do not have permission to edit this book');
+          setLoading(false);
+          setTimeout(() => navigate('/dashboard'), 2000);
+          return;
+        }
+        
         setFormData({
           title: bookRes.data.title,
           description: bookRes.data.description,
           coverImage: bookRes.data.coverImage,
+          storeLink: bookRes.data.storeLink || '',
           authors: bookRes.data.authors.map(a => a.id),
           genres: bookRes.data.genres.map(g => g.id)
         });
@@ -75,8 +104,10 @@ const EditBook = () => {
       }
     };
 
-    fetchData();
-  }, [id]);
+    if (user !== null) {
+      fetchData();
+    }
+  }, [id, user, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -84,6 +115,46 @@ const EditBook = () => {
       ...prev,
       [name]: value
     }));
+  };
+
+  const handleFileChange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    setUploading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const uploadFormData = new FormData();
+      uploadFormData.append('coverImage', file);
+
+      const response = await axios.post('http://localhost:5000/api/books/upload-cover', uploadFormData, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      setFormData(prev => ({
+        ...prev,
+        coverImage: response.data.imageUrl
+      }));
+    } catch (err) {
+      console.error('Error uploading file:', err);
+      setError('Failed to upload image');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setImageTab(newValue);
+    if (newValue === 0) {
+      setSelectedFile(null);
+    } else {
+      setFormData(prev => ({ ...prev, coverImage: '' }));
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -153,29 +224,77 @@ const EditBook = () => {
             onChange={handleChange}
           />
 
+          <Box sx={{ mt: 2, mb: 2 }}>
+            <Typography variant="h6" gutterBottom>
+              Cover Image
+            </Typography>
+            <Tabs value={imageTab} onChange={handleTabChange} sx={{ mb: 2 }}>
+              <Tab label="Image URL" />
+              <Tab label="Upload File" />
+            </Tabs>
+
+            {imageTab === 0 && (
+              <TextField
+                fullWidth
+                label="Cover Image URL"
+                name="coverImage"
+                value={formData.coverImage}
+                onChange={handleChange}
+                placeholder="https://example.com/book-cover.jpg"
+              />
+            )}
+
+            {imageTab === 1 && (
+              <Box>
+                <Button
+                  variant="outlined"
+                  component="label"
+                  startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                  disabled={uploading}
+                  fullWidth
+                  sx={{ mb: 2 }}
+                >
+                  {uploading ? 'Uploading...' : 'Choose Image File'}
+                  <input
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </Button>
+                {selectedFile && (
+                  <Typography variant="body2" color="text.secondary">
+                    Selected: {selectedFile.name}
+                  </Typography>
+                )}
+              </Box>
+            )}
+
+            {formData.coverImage && (
+              <Box sx={{ mt: 2 }}>
+                <img
+                  src={formData.coverImage}
+                  alt="Cover preview"
+                  style={{ maxWidth: '200px', maxHeight: '300px', display: 'block' }}
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = '/default-book-cover.jpg';
+                  }}
+                />
+              </Box>
+            )}
+          </Box>
+
           <TextField
             margin="normal"
             fullWidth
-            label="Cover Image URL"
-            name="coverImage"
-            value={formData.coverImage}
+            label="Store Link (Optional)"
+            name="storeLink"
+            value={formData.storeLink}
             onChange={handleChange}
-            placeholder="https://example.com/book-cover.jpg"
+            placeholder="https://amazon.com/book-link or https://goodreads.com/book"
+            helperText="Add a link to where this book can be purchased or found"
           />
-
-          {formData.coverImage && (
-            <Box sx={{ mt: 2, mb: 2 }}>
-              <img
-                src={formData.coverImage}
-                alt="Cover preview"
-                style={{ maxWidth: '200px', maxHeight: '300px' }}
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = '/default-book-cover.jpg';
-                }}
-              />
-            </Box>
-          )}
 
           <FormControl fullWidth margin="normal">
             <InputLabel>Authors</InputLabel>
