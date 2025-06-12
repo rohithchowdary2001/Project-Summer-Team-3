@@ -1,4 +1,250 @@
-import React, { useState, useEffect } from 'react';
+// import React, { useState, useEffect } from 'react';
+// import {
+//   Container,
+//   Grid,
+//   Paper,
+//   Typography,
+//   TextField,
+//   Button,
+//   List,
+//   ListItem,
+//   ListItemText,
+//   ListItemSecondaryAction,
+//   IconButton,
+//   Dialog,
+//   DialogTitle,
+//   DialogContent,
+//   DialogActions,
+//   Box,
+//   Tabs,
+//   Tab,
+//   InputAdornment,
+// } from '@mui/material';
+// import {
+//   Add as AddIcon,
+//   Delete as DeleteIcon,
+//   Edit as EditIcon,
+//   Search as SearchIcon,
+//   Clear as ClearIcon,
+// } from '@mui/icons-material';
+// import axios from 'axios';
+
+// const AdminDashboard = () => {
+//   const [tab, setTab] = useState(0);
+//   const [authors, setAuthors] = useState([]);
+//   const [genres, setGenres] = useState([]);
+//   const [searchQuery, setSearchQuery] = useState('');
+//   const [dialogOpen, setDialogOpen] = useState(false);
+//   const [editItem, setEditItem] = useState(null);
+//   const [newItemName, setNewItemName] = useState('');
+//   const [error, setError] = useState('');
+
+//   const fetchAuthors = async (query = '') => {
+//     try {
+//       const token = localStorage.getItem('token');
+//       const response = await axios.get(
+//         `http://localhost:5000/api/authors${query ? `?search=${query}` : ''}`,
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       setAuthors(response.data);
+//     } catch (err) {
+//       console.error('Error fetching authors:', err);
+//       setError('Failed to fetch authors');
+//     }
+//   };
+
+//   const fetchGenres = async (query = '') => {
+//     try {
+//       const token = localStorage.getItem('token');
+//       const response = await axios.get(
+//         `http://localhost:5000/api/genres${query ? `?search=${query}` : ''}`,
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       setGenres(response.data);
+//     } catch (err) {
+//       console.error('Error fetching genres:', err);
+//       setError('Failed to fetch genres');
+//     }
+//   };
+
+//   useEffect(() => {
+//     if (tab === 0) {
+//       fetchAuthors(searchQuery);
+//     } else {
+//       fetchGenres(searchQuery);
+//     }
+//   }, [tab, searchQuery]);
+
+//   const handleAdd = () => {
+//     setEditItem(null);
+//     setNewItemName('');
+//     setDialogOpen(true);
+//   };
+
+//   const handleEdit = (item) => {
+//     setEditItem(item);
+//     setNewItemName(item.name);
+//     setDialogOpen(true);
+//   };
+
+//   const handleDelete = async (item) => {
+//     try {
+//       const token = localStorage.getItem('token');
+//       const endpoint = tab === 0 ? 'authors' : 'genres';
+//       await axios.delete(
+//         `http://localhost:5000/api/${endpoint}/${item.id}`,
+//         { headers: { Authorization: `Bearer ${token}` } }
+//       );
+//       if (tab === 0) {
+//         setAuthors(authors.filter(a => a.id !== item.id));
+//       } else {
+//         setGenres(genres.filter(g => g.id !== item.id));
+//       }
+//     } catch (err) {
+//       console.error('Error deleting item:', err);
+//       setError('Failed to delete item');
+//     }
+//   };
+
+//   const handleSubmit = async () => {
+//     if (!newItemName.trim()) return;
+
+//     try {
+//       const token = localStorage.getItem('token');
+//       const endpoint = tab === 0 ? 'authors' : 'genres';
+
+//       if (editItem) {
+//         const response = await axios.put(
+//           `http://localhost:5000/api/${endpoint}/${editItem.id}`,
+//           { name: newItemName },
+//           { headers: { Authorization: `Bearer ${token}` } }
+//         );
+//         if (tab === 0) {
+//           setAuthors(authors.map(a => a.id === editItem.id ? response.data : a));
+//         } else {
+//           setGenres(genres.map(g => g.id === editItem.id ? response.data : g));
+//         }
+//       } else {
+//         const response = await axios.post(
+//           `http://localhost:5000/api/${endpoint}`,
+//           { name: newItemName },
+//           { headers: { Authorization: `Bearer ${token}` } }
+//         );
+//         if (tab === 0) {
+//           setAuthors([...authors, response.data]);
+//         } else {
+//           setGenres([...genres, response.data]);
+//         }
+//       }
+//       setDialogOpen(false);
+//       setNewItemName('');
+//       setEditItem(null);
+//     } catch (err) {
+//       console.error('Error submitting item:', err);
+//       setError('Failed to save item');
+//     }
+//   };
+
+//   return (
+//     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+//       <Paper sx={{ p: 2 }}>
+//         <Typography variant="h5" gutterBottom>
+//           Manage Authors and Genres
+//         </Typography>
+
+//         <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+//           <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)}>
+//             <Tab label="Authors" />
+//             <Tab label="Genres" />
+//           </Tabs>
+//         </Box>
+
+//         <Grid container spacing={2}>
+//           <Grid item xs={12}>
+//             <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+//               <TextField
+//                 fullWidth
+//                 placeholder={`Search ${tab === 0 ? 'authors' : 'genres'}...`}
+//                 value={searchQuery}
+//                 onChange={(e) => setSearchQuery(e.target.value)}
+//                 InputProps={{
+//                   startAdornment: (
+//                     <InputAdornment position="start">
+//                       <SearchIcon />
+//                     </InputAdornment>
+//                   ),
+//                   endAdornment: searchQuery && (
+//                     <InputAdornment position="end">
+//                       <IconButton onClick={() => setSearchQuery('')} edge="end">
+//                         <ClearIcon />
+//                       </IconButton>
+//                     </InputAdornment>
+//                   ),
+//                 }}
+//               />
+//               <Button
+//                 variant="contained"
+//                 startIcon={<AddIcon />}
+//                 onClick={handleAdd}
+//               >
+//                 Add {tab === 0 ? 'Author' : 'Genre'}
+//               </Button>
+//             </Box>
+
+//             {error && (
+//               <Typography color="error" sx={{ mb: 2 }}>
+//                 {error}
+//               </Typography>
+//             )}
+
+//             <List>
+//               {(tab === 0 ? authors : genres).map((item) => (
+//                 <ListItem key={item.id} divider>
+//                   <ListItemText primary={item.name} />
+//                   <ListItemSecondaryAction>
+//                     <IconButton edge="end" onClick={() => handleEdit(item)}>
+//                       <EditIcon />
+//                     </IconButton>
+//                     <IconButton edge="end" onClick={() => handleDelete(item)}>
+//                       <DeleteIcon />
+//                     </IconButton>
+//                   </ListItemSecondaryAction>
+//                 </ListItem>
+//               ))}
+//             </List>
+//           </Grid>
+//         </Grid>
+//       </Paper>
+
+//       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
+//         <DialogTitle>
+//           {editItem ? 'Edit' : 'Add'} {tab === 0 ? 'Author' : 'Genre'}
+//         </DialogTitle>
+//         <DialogContent>
+//           <TextField
+//             autoFocus
+//             margin="dense"
+//             label="Name"
+//             fullWidth
+//             value={newItemName}
+//             onChange={(e) => setNewItemName(e.target.value)}
+//           />
+//         </DialogContent>
+//         <DialogActions>
+//           <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
+//           <Button onClick={handleSubmit} variant="contained">
+//             {editItem ? 'Save' : 'Add'}
+//           </Button>
+//         </DialogActions>
+//       </Dialog>
+
+//     </Container>
+//   );
+// };
+
+// export default AdminDashboard;
+
+import React, { useState, useEffect } from "react";
 import {
   Container,
   Grid,
@@ -19,51 +265,81 @@ import {
   Tabs,
   Tab,
   InputAdornment,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Add as AddIcon,
   Delete as DeleteIcon,
   Edit as EditIcon,
   Search as SearchIcon,
   Clear as ClearIcon,
-} from '@mui/icons-material';
-import axios from 'axios';
+} from "@mui/icons-material";
+import axios from "axios";
 
 const AdminDashboard = () => {
   const [tab, setTab] = useState(0);
   const [authors, setAuthors] = useState([]);
   const [genres, setGenres] = useState([]);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState(null);
-  const [newItemName, setNewItemName] = useState('');
-  const [error, setError] = useState('');
+  const [newItemName, setNewItemName] = useState("");
+  const [error, setError] = useState("");
 
-  const fetchAuthors = async (query = '') => {
+  const fetchAuthors = async (query = "") => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:5000/api/authors${query ? `?search=${query}` : ''}`,
+        `http://localhost:5000/api/authors${query ? `?search=${query}` : ""}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setAuthors(response.data);
     } catch (err) {
-      console.error('Error fetching authors:', err);
-      setError('Failed to fetch authors');
+      console.error("Error fetching authors:", err);
+      setError("Failed to fetch authors");
     }
   };
 
-  const fetchGenres = async (query = '') => {
+  const fetchGenres = async (query = "") => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.get(
-        `http://localhost:5000/api/genres${query ? `?search=${query}` : ''}`,
+        `http://localhost:5000/api/genres${query ? `?search=${query}` : ""}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setGenres(response.data);
     } catch (err) {
-      console.error('Error fetching genres:', err);
-      setError('Failed to fetch genres');
+      console.error("Error fetching genres:", err);
+      setError("Failed to fetch genres");
+    }
+  };
+  const [users, setUsers] = useState([]);
+  const fetchUsers = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const response = await axios.get("http://localhost:5000/api/users", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    }
+  };
+  useEffect(() => {
+    fetchAuthors();
+    fetchGenres();
+    fetchUsers(); // <-- add this
+  }, []);
+  const handleDeleteUser = async (userId) => {
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
+    try {
+      const token = localStorage.getItem("token");
+      await axios.delete(`http://localhost:5000/api/admin/users/${userId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      fetchUsers();
+    } catch (error) {
+      alert("Failed to delete user");
+      console.error("Error deleting user:", error);
     }
   };
 
@@ -77,7 +353,7 @@ const AdminDashboard = () => {
 
   const handleAdd = () => {
     setEditItem(null);
-    setNewItemName('');
+    setNewItemName("");
     setDialogOpen(true);
   };
 
@@ -89,20 +365,19 @@ const AdminDashboard = () => {
 
   const handleDelete = async (item) => {
     try {
-      const token = localStorage.getItem('token');
-      const endpoint = tab === 0 ? 'authors' : 'genres';
-      await axios.delete(
-        `http://localhost:5000/api/${endpoint}/${item.id}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      const token = localStorage.getItem("token");
+      const endpoint = tab === 0 ? "authors" : "genres";
+      await axios.delete(`http://localhost:5000/api/${endpoint}/${item.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (tab === 0) {
-        setAuthors(authors.filter(a => a.id !== item.id));
+        setAuthors(authors.filter((a) => a.id !== item.id));
       } else {
-        setGenres(genres.filter(g => g.id !== item.id));
+        setGenres(genres.filter((g) => g.id !== item.id));
       }
     } catch (err) {
-      console.error('Error deleting item:', err);
-      setError('Failed to delete item');
+      console.error("Error deleting item:", err);
+      setError("Failed to delete item");
     }
   };
 
@@ -110,9 +385,9 @@ const AdminDashboard = () => {
     if (!newItemName.trim()) return;
 
     try {
-      const token = localStorage.getItem('token');
-      const endpoint = tab === 0 ? 'authors' : 'genres';
-      
+      const token = localStorage.getItem("token");
+      const endpoint = tab === 0 ? "authors" : "genres";
+
       if (editItem) {
         const response = await axios.put(
           `http://localhost:5000/api/${endpoint}/${editItem.id}`,
@@ -120,9 +395,13 @@ const AdminDashboard = () => {
           { headers: { Authorization: `Bearer ${token}` } }
         );
         if (tab === 0) {
-          setAuthors(authors.map(a => a.id === editItem.id ? response.data : a));
+          setAuthors(
+            authors.map((a) => (a.id === editItem.id ? response.data : a))
+          );
         } else {
-          setGenres(genres.map(g => g.id === editItem.id ? response.data : g));
+          setGenres(
+            genres.map((g) => (g.id === editItem.id ? response.data : g))
+          );
         }
       } else {
         const response = await axios.post(
@@ -137,11 +416,11 @@ const AdminDashboard = () => {
         }
       }
       setDialogOpen(false);
-      setNewItemName('');
+      setNewItemName("");
       setEditItem(null);
     } catch (err) {
-      console.error('Error submitting item:', err);
-      setError('Failed to save item');
+      console.error("Error submitting item:", err);
+      setError("Failed to save item");
     }
   };
 
@@ -151,8 +430,35 @@ const AdminDashboard = () => {
         <Typography variant="h5" gutterBottom>
           Manage Authors and Genres
         </Typography>
+        <Grid item xs={12} md={12}>
+          <Paper sx={{ p: 3, mt: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Manage Users
+            </Typography>
+            <List>
+              {users.map((user) => (
+                <ListItem key={user.id}>
+                  <ListItemText
+                    primary={user.username || user.name || user.email}
+                    secondary={user.role}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      color="error"
+                      onClick={() => handleDeleteUser(user.id)}
+                      disabled={user.role === "admin"} // Prevent deleting other admins
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Grid>
 
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 2 }}>
+        <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
           <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)}>
             <Tab label="Authors" />
             <Tab label="Genres" />
@@ -161,10 +467,10 @@ const AdminDashboard = () => {
 
         <Grid container spacing={2}>
           <Grid item xs={12}>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
+            <Box sx={{ display: "flex", gap: 2, mb: 2 }}>
               <TextField
                 fullWidth
-                placeholder={`Search ${tab === 0 ? 'authors' : 'genres'}...`}
+                placeholder={`Search ${tab === 0 ? "authors" : "genres"}...`}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 InputProps={{
@@ -175,7 +481,7 @@ const AdminDashboard = () => {
                   ),
                   endAdornment: searchQuery && (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setSearchQuery('')} edge="end">
+                      <IconButton onClick={() => setSearchQuery("")} edge="end">
                         <ClearIcon />
                       </IconButton>
                     </InputAdornment>
@@ -187,7 +493,7 @@ const AdminDashboard = () => {
                 startIcon={<AddIcon />}
                 onClick={handleAdd}
               >
-                Add {tab === 0 ? 'Author' : 'Genre'}
+                Add {tab === 0 ? "Author" : "Genre"}
               </Button>
             </Box>
 
@@ -218,7 +524,7 @@ const AdminDashboard = () => {
 
       <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)}>
         <DialogTitle>
-          {editItem ? 'Edit' : 'Add'} {tab === 0 ? 'Author' : 'Genre'}
+          {editItem ? "Edit" : "Add"} {tab === 0 ? "Author" : "Genre"}
         </DialogTitle>
         <DialogContent>
           <TextField
@@ -233,7 +539,7 @@ const AdminDashboard = () => {
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Cancel</Button>
           <Button onClick={handleSubmit} variant="contained">
-            {editItem ? 'Save' : 'Add'}
+            {editItem ? "Save" : "Add"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -241,4 +547,4 @@ const AdminDashboard = () => {
   );
 };
 
-export default AdminDashboard; 
+export default AdminDashboard;
