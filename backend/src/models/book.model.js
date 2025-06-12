@@ -19,6 +19,10 @@ const Book = sequelize.define('Book', {
     type: DataTypes.STRING,
     allowNull: true
   },
+  storeLink: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   createdBy: {
     type: DataTypes.INTEGER,
     allowNull: false,

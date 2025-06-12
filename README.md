@@ -1,257 +1,270 @@
-# Book Review Application
+# Book Tracking and Review Application
 
-A full-stack web application for managing and reviewing books, built with Node.js, React, and MySQL.
+A full-stack web application for tracking books, managing reading progress, and sharing reviews. Users can add books, track their reading status, write reviews, and manage their personal book collection.
 
 ## Features
 
-- User authentication (register, login, logout)
-- Book management (add, view, update, delete)
-- Book reviews with ratings
-- Favorite books functionality
-- Responsive design with Material-UI
-- File upload for book cover images
+### User Features
+- User authentication (login/register)
+- Add new books with title, description, cover image, authors, and genres
+- Track reading status (not started, in progress, completed)
+- Track reading progress (0-100%)
+- Mark books as owned (physical copy)
+- Add/remove books from wishlist
+- Write and manage reviews
+- Edit/delete books they've added
+- Search books by title
 
-## Tech Stack
+### Admin Features
+- Manage all books (edit/delete any book)
+- Manage authors and genres
+- Moderate reviews
+- Access admin dashboard
 
-### Backend
-- Node.js
-- Express.js
-- MySQL
-- Sequelize ORM
-- JWT Authentication
-- Multer for file uploads
+## Architecture
+
+### Flow Diagram
+```mermaid
+graph TD
+    A[User/Admin] --> B[Frontend React App]
+    B --> C[Authentication]
+    C --> D[Protected Routes]
+    D --> E[Backend API]
+    E --> F[MySQL Database]
+    
+    subgraph Frontend
+    B --> G[Components]
+    G --> H[Dashboard]
+    G --> I[Book Details]
+    G --> J[Add/Edit Book]
+    G --> K[User Profile]
+    end
+    
+    subgraph Backend
+    E --> L[Book Routes]
+    E --> M[Auth Routes]
+    E --> N[User Routes]
+    E --> O[Review Routes]
+    end
+    
+    subgraph Database
+    F --> P[Books]
+    F --> Q[Users]
+    F --> R[Reviews]
+    F --> S[Authors]
+    F --> T[Genres]
+    end
+```
+
+## Project Structure
+
+### Frontend Structure
+```
+frontend/
+├── public/
+│   └── default-book-cover.jpg
+├── src/
+│   ├── components/
+│   │   ├── Login.js
+│   │   ├── Register.js
+│   │   ├── Navigation.js
+│   │   ├── Dashboard.js
+│   │   ├── BookDetails.js
+│   │   ├── AddBook.js
+│   │   ├── EditBook.js
+│   │   └── AdminDashboard.js
+│   ├── App.js
+│   └── index.js
+└── package.json
+```
+
+### Backend Structure
+```
+backend/
+├── src/
+│   ├── models/
+│   │   ├── index.js
+│   │   ├── user.model.js
+│   │   ├── book.model.js
+│   │   ├── author.model.js
+│   │   ├── genre.model.js
+│   │   └── review.model.js
+│   ├── routes/
+│   │   ├── auth.routes.js
+│   │   ├── book.routes.js
+│   │   ├── user.routes.js
+│   │   └── admin.routes.js
+│   ├── middleware/
+│   │   └── auth.middleware.js
+│   ├── config/
+│   │   └── database.js
+│   └── server.js
+└── package.json
+```
+
+## API Routes
+
+### Authentication Routes
+- `POST /api/auth/register` - Register new user
+- `POST /api/auth/login` - User login
+- `POST /api/auth/admin/register` - Register admin (with admin code)
+
+### Book Routes
+- `GET /api/books` - Get all books
+- `GET /api/books/:id` - Get single book details
+- `POST /api/books` - Add new book
+- `PUT /api/books/:id` - Update book (admin or creator only)
+- `DELETE /api/books/:id` - Delete book (admin or creator only)
+- `POST /api/books/:id/status` - Update reading status
+- `POST /api/books/:id/reviews` - Add review
+- `DELETE /api/books/:id/reviews/:reviewId` - Delete review
+
+### Admin Routes
+- `GET /api/admin/users` - Get all users
+- `GET /api/admin/stats` - Get application statistics
+- `POST /api/admin/authors` - Add new author
+- `POST /api/admin/genres` - Add new genre
+
+## Setup Instructions
+
+### Prerequisites
+- Node.js (v14 or higher)
+- MySQL (v8 or higher)
+- npm or yarn
+
+### Backend Setup
+1. Navigate to backend directory:
+   ```bash
+   cd backend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create `.env` file:
+   ```
+   DB_HOST=localhost
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
+   DB_NAME=book_tracker
+   JWT_SECRET=your_jwt_secret
+   ADMIN_CODE=your_admin_registration_code
+   ```
+
+4. Initialize database:
+   ```bash
+   npx sequelize-cli db:create
+   npx sequelize-cli db:migrate
+   ```
+
+5. Start the server:
+   ```bash
+   npm run dev
+   ```
+
+### Frontend Setup
+1. Navigate to frontend directory:
+   ```bash
+   cd frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Create `.env` file:
+   ```
+   REACT_APP_API_URL=http://localhost:5000/api
+   ```
+
+4. Start the application:
+   ```bash
+   npm start
+   ```
+
+## Database Schema
+
+### Users Table
+- id (PK)
+- username
+- email
+- password (hashed)
+- role (user/admin)
+- createdAt
+- updatedAt
+
+### Books Table
+- id (PK)
+- title
+- description
+- coverImage
+- createdBy (FK to Users)
+- createdAt
+- updatedAt
+
+### Authors Table
+- id (PK)
+- name
+- createdAt
+- updatedAt
+
+### Genres Table
+- id (PK)
+- name
+- createdAt
+- updatedAt
+
+### Reviews Table
+- id (PK)
+- content
+- userId (FK to Users)
+- bookId (FK to Books)
+- createdAt
+- updatedAt
+
+### UserBooks Table
+- userId (PK, FK to Users)
+- bookId (PK, FK to Books)
+- readingStatus
+- readingProgress
+- hasPhysicalCopy
+- isWishlisted
+- createdAt
+- updatedAt
+
+### BookAuthors Table
+- bookId (PK, FK to Books)
+- authorId (PK, FK to Authors)
+
+### BookGenres Table
+- bookId (PK, FK to Books)
+- genreId (PK, FK to Genres)
+
+## Technologies Used
 
 ### Frontend
 - React
 - Material-UI
-- React Router
 - Axios
+- React Router
 - React Toastify
-- Date-fns
 
-## Project Structure
+### Backend
+- Node.js
+- Express.js
+- Sequelize ORM
+- MySQL
+- JSON Web Tokens
+- Bcrypt
 
-```
-book-review-app/
-├── backend/
-│   ├── config/
-│   ├── middleware/
-│   ├── models/
-│   ├── routes/
-│   ├── uploads/
-│   ├── .env
-│   ├── package.json
-│   └── server.js
-└── frontend/
-    ├── public/
-    ├── src/
-    │   ├── components/
-    │   ├── context/
-    │   ├── App.js
-    │   └── index.js
-    └── package.json
-```
-
-## Setup Instructions
-
-### 1. MySQL Setup
-
-First, you need to set up MySQL:
-
-1. Open MySQL command line as root:
-```bash
-sudo mysql
-```
-
-2. Create a new user and database:
-```sql
-CREATE USER 'bookuser'@'localhost' IDENTIFIED BY 'bookpass123';
-CREATE DATABASE book_review_app;
-GRANT ALL PRIVILEGES ON book_review_app.* TO 'bookuser'@'localhost';
-FLUSH PRIVILEGES;
-exit;
-```
-
-3. Verify the user and database:
-```bash
-mysql -u bookuser -p
-```
-Enter password when prompted: `bookpass123`
-
-Then in MySQL:
-```sql
-SHOW DATABASES;
-USE book_review_app;
-SHOW TABLES;
-exit;
-```
-
-### 2. Backend Setup
-
-1. Navigate to the backend directory:
-```bash
-cd backend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create a `.env` file in the backend directory with the following variables:
-```
-DB_NAME=book_review_app
-DB_USER=bookuser
-DB_PASSWORD=bookpass123
-DB_HOST=localhost
-JWT_SECRET=book_review_secret_key
-PORT=5000
-```
-
-4. Start the backend server:
-```bash
-npm run dev
-```
-
-The backend server will start on http://localhost:5000
-
-### 3. Frontend Setup
-
-1. Navigate to the frontend directory:
-```bash
-cd frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Start the frontend development server:
-```bash
-npm start
-```
-
-The frontend application will start on http://localhost:3000
-
-## API Endpoints
-
-### Authentication
-- POST /api/auth/register - Register a new user
-- POST /api/auth/login - Login user
-
-### Books
-- GET /api/books - Get all books
-- GET /api/books/:id - Get book by ID
-- POST /api/books - Create new book
-- PUT /api/books/:id - Update book
-- DELETE /api/books/:id - Delete book
-
-### Reviews
-- GET /api/reviews - Get all reviews
-- GET /api/reviews/book/:bookId - Get reviews by book
-- GET /api/reviews/user/:userId - Get reviews by user
-- POST /api/reviews - Create new review
-- PUT /api/reviews/:id - Update review
-- DELETE /api/reviews/:id - Delete review
-
-### Favorites
-- GET /api/favorites - Get user's favorite books
-- POST /api/favorites/:bookId - Add book to favorites
-- DELETE /api/favorites/:bookId - Remove book from favorites
-
-## Application Flow
-
-1. User Authentication Flow:
-   - User registers or logs in
-   - JWT token is generated and stored
-   - Protected routes are accessible
-
-2. Book Management Flow:
-   - Users can add new books with cover images
-   - View book details and reviews
-   - Update or delete their books
-
-3. Review System Flow:
-   - Users can write reviews for books
-   - Rate books on a 5-star scale
-   - View all reviews for a book
-
-4. Favorites System Flow:
-   - Users can add/remove books to favorites
-   - View their favorite books
-   - Quick access to favorite books
-
-## Troubleshooting
-
-### MySQL Connection Issues
-
-If you encounter MySQL connection issues:
-
-1. Make sure MySQL is running:
-```bash
-sudo service mysql status
-```
-
-2. If MySQL is not running, start it:
-```bash
-sudo service mysql start
-```
-
-3. Verify your MySQL credentials:
-```bash
-mysql -u bookuser -p
-```
-Enter password: `bookpass123`
-
-4. Check if the database exists:
-```sql
-SHOW DATABASES;
-```
-
-5. If needed, recreate the user and database:
-```sql
-DROP USER IF EXISTS 'bookuser'@'localhost';
-DROP DATABASE IF EXISTS book_review_app;
-CREATE USER 'bookuser'@'localhost' IDENTIFIED BY 'bookpass123';
-CREATE DATABASE book_review_app;
-GRANT ALL PRIVILEGES ON book_review_app.* TO 'bookuser'@'localhost';
-FLUSH PRIVILEGES;
-```
-
-### Backend Issues
-
-1. Check if the port 5000 is available:
-```bash
-sudo lsof -i :5000
-```
-
-2. If the port is in use, you can change it in the `.env` file:
-```
-PORT=5001
-```
-
-### Frontend Issues
-
-1. If you get module not found errors:
-```bash
-rm -rf node_modules
-npm install
-```
-
-2. If the frontend can't connect to the backend:
-- Check if the backend is running
-- Verify the API URL in your frontend code
-- Check CORS settings in the backend
-
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
+## Security Features
+- JWT-based authentication
+- Password hashing
+- Protected routes
+- Role-based access control
+- Input validation
+- Error handling
+- CORS protection

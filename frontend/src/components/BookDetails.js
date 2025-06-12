@@ -29,6 +29,8 @@ import {
   FavoriteBorder,
   Delete as DeleteIcon,
   Edit as EditIcon,
+  Share as ShareIcon,
+  Store as StoreIcon,
 } from '@mui/icons-material';
 import axios from 'axios';
 
@@ -144,6 +146,31 @@ const BookDetails = () => {
     return user?.role === 'admin' || book?.createdBy === user?.id;
   };
 
+  const handleShare = async () => {
+    const bookUrl = `${window.location.origin}/books/${id}`;
+    try {
+      await navigator.clipboard.writeText(bookUrl);
+      // You could add a snackbar/toast notification here
+      alert('Book link copied to clipboard!');
+    } catch (err) {
+      console.error('Failed to copy: ', err);
+      // Fallback: select the text
+      const textArea = document.createElement('textarea');
+      textArea.value = bookUrl;
+      document.body.appendChild(textArea);
+      textArea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textArea);
+      alert('Book link copied to clipboard!');
+    }
+  };
+
+  const handleStoreClick = () => {
+    if (book?.storeLink) {
+      window.open(book.storeLink, '_blank');
+    }
+  };
+
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
@@ -189,22 +216,40 @@ const BookDetails = () => {
               <Typography variant="h5">
                 {book.title}
               </Typography>
-              {canModifyBook() && (
-                <Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <IconButton
+                  onClick={handleShare}
+                  title="Share book"
+                  color="primary"
+                >
+                  <ShareIcon />
+                </IconButton>
+                {book.storeLink && (
                   <IconButton
-                    onClick={() => navigate(`/books/${id}/edit`)}
-                    title="Edit book"
+                    onClick={handleStoreClick}
+                    title="Visit store"
+                    color="secondary"
                   >
-                    <EditIcon />
+                    <StoreIcon />
                   </IconButton>
-                  <IconButton
-                    onClick={() => setDeleteDialogOpen(true)}
-                    title="Delete book"
-                  >
-                    <DeleteIcon />
-                  </IconButton>
-                </Box>
-              )}
+                )}
+                {canModifyBook() && (
+                  <>
+                    <IconButton
+                      onClick={() => navigate(`/books/${id}/edit`)}
+                      title="Edit book"
+                    >
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton
+                      onClick={() => setDeleteDialogOpen(true)}
+                      title="Delete book"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </>
+                )}
+              </Box>
             </Box>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
               By {book.authors?.map(author => author.name).join(', ')}
@@ -312,10 +357,11 @@ const BookDetails = () => {
                         {new Date(review.createdAt).toLocaleDateString()}
                       </Typography>
                     </Box>
-                    {review.user.id === user?.id && (
+                    {(review.user.id === user?.id || user?.role === 'admin') && (
                       <IconButton
                         size="small"
                         onClick={() => handleDeleteReview(review.id)}
+                        title={user?.role === 'admin' && review.user.id !== user?.id ? 'Delete review (Admin)' : 'Delete your review'}
                       >
                         <DeleteIcon />
                       </IconButton>

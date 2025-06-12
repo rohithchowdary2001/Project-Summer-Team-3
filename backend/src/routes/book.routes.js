@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const { Book, UserBook, Review, Author, Genre, User } = require('../models');
 const { auth, isAdmin } = require('../middleware/auth.middleware');
+const upload = require('../middleware/upload.middleware');
 const { Op } = require('sequelize');
+const path = require('path');
 
 // Get all books with search functionality
 router.get('/', auth, async (req, res) => {
@@ -33,6 +35,51 @@ router.get('/', auth, async (req, res) => {
     res.json(books);
   } catch (error) {
     console.error('Error fetching books:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Get user's favorite books (MUST come before /:id route)
+router.get('/favorites', auth, async (req, res) => {
+  try {
+    // First get all favorited UserBook records for this user
+    const favoriteUserBooks = await UserBook.findAll({
+      where: {
+        userId: req.user.id,
+        isWishlisted: true
+      }
+    });
+
+    // Extract book IDs
+    const bookIds = favoriteUserBooks.map(userBook => userBook.bookId);
+
+    if (bookIds.length === 0) {
+      return res.json([]);
+    }
+
+    // Get the books with their associations
+    const favoriteBooks = await Book.findAll({
+      where: {
+        id: bookIds
+      },
+      include: [
+        {
+          model: Author,
+          as: 'authors',
+          through: { attributes: [] }
+        },
+        {
+          model: Genre,
+          as: 'genres',
+          through: { attributes: [] }
+        }
+      ],
+      order: [['title', 'ASC']]
+    });
+
+    res.json(favoriteBooks);
+  } catch (error) {
+    console.error('Error fetching favorite books:', error);
     res.status(500).json({ message: 'Server error' });
   }
 });
@@ -92,10 +139,25 @@ router.get('/:id', auth, async (req, res) => {
   }
 });
 
+// Upload book cover image
+router.post('/upload-cover', [auth, upload.single('coverImage')], async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: 'No file uploaded' });
+    }
+
+    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    res.json({ imageUrl });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    res.status(500).json({ message: 'Failed to upload image' });
+  }
+});
+
 // Add new book
 router.post('/', auth, async (req, res) => {
   try {
-    const { title, description, coverImage } = req.body;
+    const { title, description, coverImage, storeLink } = req.body;
     let { authors, genres } = req.body;
     
     // Create book
@@ -103,6 +165,7 @@ router.post('/', auth, async (req, res) => {
       title,
       description,
       coverImage,
+      storeLink,
       createdBy: req.user.id
     });
 
@@ -211,13 +274,18 @@ router.post('/:id/reviews', auth, async (req, res) => {
   }
 });
 
-// Delete review (Admin only)
-router.delete('/:bookId/reviews/:reviewId', [auth, isAdmin], async (req, res) => {
+// Delete review (Admin or review owner)
+router.delete('/:bookId/reviews/:reviewId', auth, async (req, res) => {
   try {
     const review = await Review.findByPk(req.params.reviewId);
     
     if (!review) {
       return res.status(404).json({ message: 'Review not found' });
+    }
+
+    // Check if user is admin or review owner
+    if (req.user.role !== 'admin' && review.userId !== req.user.id) {
+      return res.status(403).json({ message: 'Not authorized to delete this review' });
     }
 
     await review.destroy();
@@ -242,14 +310,15 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(403).json({ message: 'Not authorized to update this book' });
     }
 
-    const { title, description, coverImage } = req.body;
+    const { title, description, coverImage, storeLink } = req.body;
     let { authors, genres } = req.body;
 
     // Update basic book info
     await book.update({
       title: title || book.title,
       description: description || book.description,
-      coverImage: coverImage || book.coverImage
+      coverImage: coverImage || book.coverImage,
+      storeLink: storeLink !== undefined ? storeLink : book.storeLink
     });
 
     // Update authors if provided
