@@ -430,33 +430,6 @@ const AdminDashboard = () => {
         <Typography variant="h5" gutterBottom>
           Manage Authors and Genres
         </Typography>
-        <Grid item xs={12} md={12}>
-          <Paper sx={{ p: 3, mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Manage Users
-            </Typography>
-            <List>
-              {users.map((user) => (
-                <ListItem key={user.id}>
-                  <ListItemText
-                    primary={user.username || user.name || user.email}
-                    secondary={user.role}
-                  />
-                  <ListItemSecondaryAction>
-                    <IconButton
-                      edge="end"
-                      color="error"
-                      onClick={() => handleDeleteUser(user.id)}
-                      disabled={user.role === "admin"} // Prevent deleting other admins
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </ListItemSecondaryAction>
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-        </Grid>
 
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
           <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)}>
@@ -543,6 +516,33 @@ const AdminDashboard = () => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Grid item xs={12} md={12}>
+          <Paper sx={{ p: 3, mt: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Manage Users
+            </Typography>
+            <List>
+              {users.map((user) => (
+                <ListItem key={user.id}>
+                  <ListItemText
+                    primary={user.username || user.name || user.email}
+                    secondary={user.role}
+                  />
+                  <ListItemSecondaryAction>
+                    <IconButton
+                      edge="end"
+                      color="error"
+                      onClick={() => handleDeleteUser(user.id)}
+                      disabled={user.role === "admin"} // Prevent deleting other admins
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))}
+            </List>
+          </Paper>
+        </Grid>
     </Container>
   );
 };

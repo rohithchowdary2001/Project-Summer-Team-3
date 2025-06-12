@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
+
 import {
   AppBar,
   Box,
@@ -10,7 +12,7 @@ import {
   MenuItem,
   Button,
   Container,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Menu as MenuIcon,
   AccountCircle,
@@ -18,7 +20,7 @@ import {
   Add as AddIcon,
   AdminPanelSettings,
   Favorite as FavoriteIcon,
-} from '@mui/icons-material';
+} from "@mui/icons-material";
 
 const Navigation = () => {
   const navigate = useNavigate();
@@ -27,7 +29,7 @@ const Navigation = () => {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    const userJson = localStorage.getItem('user');
+    const userJson = localStorage.getItem("user");
     if (userJson) {
       setUser(JSON.parse(userJson));
     }
@@ -49,23 +51,40 @@ const Navigation = () => {
     setAnchorElUser(null);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
+  // const handleLogout = () => {
+  //   localStorage.removeItem('token');
+  //   localStorage.removeItem('user');
+  //   navigate('/login');
+  // };
+  const handleLogout = async () => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        await axios.post(
+          "http://localhost:5000/api/auth/logout",
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+      } catch (error) {
+        // Optionally handle error (e.g., log or show a message)
+      }
+    }
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/login");
   };
 
   const menuItems = [
-    { label: 'Books', icon: <LibraryBooks />, path: '/dashboard' },
-    { label: 'Favourites', icon: <FavoriteIcon />, path: '/favourites' },
-    { label: 'Add Book', icon: <AddIcon />, path: '/books/add' },
+    { label: "Books", icon: <LibraryBooks />, path: "/dashboard" },
+    { label: "Wishlist ", icon: <FavoriteIcon />, path: "/favourites" },
+    { label: "Add Book", icon: <AddIcon />, path: "/books/add" },
   ];
 
-  if (user?.role === 'admin') {
+  if (user?.role === "admin") {
     menuItems.push({
-      label: 'Admin Panel',
+      label: "Admin Panel",
       icon: <AdminPanelSettings />,
-      path: '/admin'
+      path: "/admin",
     });
   }
 
@@ -74,7 +93,7 @@ const Navigation = () => {
       <Container maxWidth="xl">
         <Toolbar disableGutters>
           {/* Mobile Menu */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: "flex", md: "none" } }}>
             <IconButton
               size="large"
               onClick={handleOpenNavMenu}
@@ -85,18 +104,18 @@ const Navigation = () => {
             <Menu
               anchorEl={anchorElNav}
               anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
+                vertical: "bottom",
+                horizontal: "left",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
+                vertical: "top",
+                horizontal: "left",
               }}
               open={Boolean(anchorElNav)}
               onClose={handleCloseNavMenu}
               sx={{
-                display: { xs: 'block', md: 'none' },
+                display: { xs: "block", md: "none" },
               }}
             >
               {menuItems.map((item) => (
@@ -107,7 +126,7 @@ const Navigation = () => {
                     navigate(item.path);
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
                     {item.icon}
                     <Typography sx={{ ml: 1 }}>{item.label}</Typography>
                   </Box>
@@ -124,21 +143,26 @@ const Navigation = () => {
             to="/dashboard"
             sx={{
               mr: 2,
-              display: { xs: 'none', md: 'flex' },
+              display: { xs: "none", md: "flex" },
               fontWeight: 700,
-              color: 'inherit',
-              textDecoration: 'none',
+              color: "inherit",
+              textDecoration: "none",
             }}
           >
             Book Tracker
           </Typography>
 
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
+          <Box sx={{ flexGrow: 1, display: { xs: "none", md: "flex" } }}>
             {menuItems.map((item) => (
               <Button
                 key={item.label}
                 onClick={() => navigate(item.path)}
-                sx={{ my: 2, color: 'white', display: 'flex', alignItems: 'center' }}
+                sx={{
+                  my: 2,
+                  color: "white",
+                  display: "flex",
+                  alignItems: "center",
+                }}
                 startIcon={item.icon}
               >
                 {item.label}
@@ -148,20 +172,23 @@ const Navigation = () => {
 
           {/* User Menu */}
           <Box sx={{ flexGrow: 0 }}>
-            <IconButton onClick={handleOpenUserMenu} sx={{ p: 0, color: 'inherit' }}>
+            <IconButton
+              onClick={handleOpenUserMenu}
+              sx={{ p: 0, color: "inherit" }}
+            >
               <AccountCircle />
             </IconButton>
             <Menu
-              sx={{ mt: '45px' }}
+              sx={{ mt: "45px" }}
               anchorEl={anchorElUser}
               anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               keepMounted
               transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
+                vertical: "top",
+                horizontal: "right",
               }}
               open={Boolean(anchorElUser)}
               onClose={handleCloseUserMenu}
@@ -180,4 +207,4 @@ const Navigation = () => {
   );
 };
 
-export default Navigation; 
+export default Navigation;

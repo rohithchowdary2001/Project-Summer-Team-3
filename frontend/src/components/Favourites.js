@@ -139,7 +139,7 @@ const Favourites = () => {
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <Typography variant="h4" component="h1">
-          My Favourite Books
+          My Wishlist...
         </Typography>
         <Button
           variant="contained"
@@ -250,7 +250,7 @@ const Favourites = () => {
 
       {loading && (
         <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-          <Typography>Loading favorite books...</Typography>
+          <Typography>Loading Wishlist... books...</Typography>
         </Box>
       )}
 
@@ -260,7 +260,7 @@ const Favourites = () => {
             No favorite books yet
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Start adding books to your favorites by clicking the heart icon on any book!
+            Start adding books to your Wishlist by clicking the heart icon on any book!
           </Typography>
           <Button
             variant="contained"

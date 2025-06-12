@@ -4,6 +4,7 @@ const Author = require('./author.model');
 const Genre = require('./genre.model');
 const Review = require('./review.model');
 const UserBook = require('./userBook.model');
+const Session = require('./session.model'); // <-- Add this line
 
 // Initialize associations
 const models = {
@@ -12,9 +13,9 @@ const models = {
   Author,
   Genre,
   Review,
-  UserBook
+  UserBook,
+  Session
 };
-
 // Call associate function for each model that has it
 Object.values(models)
   .filter(model => typeof model.associate === 'function')
