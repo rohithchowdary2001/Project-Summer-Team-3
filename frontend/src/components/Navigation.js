@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+
 import {
   AppBar,
   Box,
@@ -49,11 +51,28 @@ const Navigation = () => {
     setAnchorElUser(null);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
+  // const handleLogout = () => {
+  //   localStorage.removeItem('token');
+  //   localStorage.removeItem('user');
+  //   navigate('/login');
+  // };
+  const handleLogout = async () => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    try {
+     await axios.post(
+  'http://localhost:5000/api/auth/logout',
+  {},
+  { headers: { Authorization: `Bearer ${token}` } }
+);
+    } catch (error) {
+      // Optionally handle error (e.g., log or show a message)
+    }
+  }
+  localStorage.removeItem('token');
+  localStorage.removeItem('user');
+  navigate('/login');
+};
 
   const menuItems = [
     { label: 'Books', icon: <LibraryBooks />, path: '/dashboard' },
