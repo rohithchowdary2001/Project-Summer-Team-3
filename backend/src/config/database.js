@@ -13,8 +13,4 @@ const sequelize = new Sequelize(
   }
 );
 
-<<<<<<< HEAD
 module.exports = sequelize;
-=======
-module.exports = sequelize;
->>>>>>> 5a77c8e (changes for AWS)
