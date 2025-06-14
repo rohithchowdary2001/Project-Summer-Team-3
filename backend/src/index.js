@@ -3,7 +3,7 @@ const cors = require('cors');
 const sequelize = require('./config/database');
 const path = require('path');
 const adminRoutes = require('./routes/admin.routes');
-
+require('dotenv').config();
 const app = express();
 
 // Middleware
@@ -20,6 +20,7 @@ app.use('/api/reviews', require('./routes/review.routes'));
 app.use('/api/authors', require('./routes/author.routes'));
 app.use('/api/genres', require('./routes/genre.routes'));
 app.use('/api/admin', adminRoutes);
+app.use('/api/ai', require('./routes/ai.routes'));
 
 const PORT = process.env.PORT || 5000;
 

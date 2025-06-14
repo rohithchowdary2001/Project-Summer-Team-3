@@ -27,6 +27,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ShareIcon from '@mui/icons-material/Share';
 import StoreIcon from '@mui/icons-material/Store';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import axios from 'axios';
 
 const Dashboard = () => {
@@ -38,6 +39,10 @@ const Dashboard = () => {
   const [user, setUser] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState(null);
+
+  // AI Suggestions state
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestLoading, setSuggestLoading] = useState(false);
 
   useEffect(() => {
     // Get user info from localStorage
@@ -157,6 +162,25 @@ const Dashboard = () => {
     return 'Good evening';
   };
 
+  // AI Suggestions handler
+  const handleAISuggestions = async () => {
+    setSuggestLoading(true);
+    setSuggestions([]);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.post(
+        'http://localhost:5000/api/ai/suggest-books',
+        { books: books.map(b => b.title) },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setSuggestions(response.data.suggestions.split('\n').filter(Boolean));
+    } catch (err) {
+      setSuggestions(['Failed to get suggestions.']);
+    } finally {
+      setSuggestLoading(false);
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       {/* Greeting Section */}
@@ -181,6 +205,30 @@ const Dashboard = () => {
           Ready to discover your next great read? Browse through your collection or add a new book to get started.
         </Typography>
       </Paper>
+
+      {/* AI Suggestions Section */}
+      <Box sx={{ mb: 2, display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Button
+          variant="outlined"
+          startIcon={<AutoAwesomeIcon />}
+          onClick={handleAISuggestions}
+          disabled={suggestLoading}
+        >
+          {suggestLoading ? "Getting Suggestions..." : "AI Book Suggestions"}
+        </Button>
+      </Box>
+      {suggestions.length > 0 && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            AI Book Suggestions
+          </Typography>
+          {suggestions.map((s, i) => (
+            <Typography key={i} variant="body2">
+              {s}
+            </Typography>
+          ))}
+        </Paper>
+      )}
 
       <Box sx={{ mb: 4, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <TextField
@@ -336,4 +384,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;
