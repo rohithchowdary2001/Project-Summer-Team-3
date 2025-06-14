@@ -32,14 +32,19 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // Remove the old foreign key constraint
-    await queryInterface.removeConstraint('Sessions', 'Sessions_userId_Users_fk'); // Use your actual constraint name
+    // Remove the old foreign key constraint if it exists
+    try {
+      await queryInterface.removeConstraint('Sessions', 'Sessions_userId_Users_fk');
+    } catch (err) {
+      // Ignore error if constraint does not exist
+      console.warn('Constraint Sessions_userId_Users_fk did not exist, skipping removal.');
+    }
 
     // Add the new foreign key constraint WITHOUT onDelete: 'CASCADE'
     await queryInterface.addConstraint('Sessions', {
       fields: ['userId'],
       type: 'foreign key',
-      name: 'Sessions_userId_Users_fk', // Use the same or a new name
+      name: 'Sessions_userId_Users_fk',
       references: {
         table: 'Users',
         field: 'id'
@@ -50,7 +55,11 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeConstraint('Sessions', 'Sessions_userId_Users_fk');
+    try {
+      await queryInterface.removeConstraint('Sessions', 'Sessions_userId_Users_fk');
+    } catch (err) {
+      console.warn('Constraint Sessions_userId_Users_fk did not exist, skipping removal.');
+    }
     // Optionally, add back the old constraint with CASCADE if needed
   }
 };

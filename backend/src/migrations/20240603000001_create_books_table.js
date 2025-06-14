@@ -20,6 +20,14 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true
       },
+      storeLink: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
+      publishDate: {
+        type: Sequelize.DATEONLY,
+        allowNull: true
+      },
       createdBy: {
         type: Sequelize.INTEGER,
         allowNull: false,
@@ -42,4 +50,4 @@ module.exports = {
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('Books');
   }
-}; 
+};

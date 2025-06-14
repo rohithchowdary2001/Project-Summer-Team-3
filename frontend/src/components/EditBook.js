@@ -42,6 +42,7 @@ const EditBook = () => {
     storeLink: "",
     authors: [],
     genres: [],
+    publishDate: "", // <-- Add this line
   });
   const [authors, setAuthors] = useState([]);
   const [genres, setGenres] = useState([]);
@@ -93,6 +94,7 @@ const EditBook = () => {
           storeLink: bookRes.data.storeLink || "",
           authors: bookRes.data.authors.map((a) => a.id),
           genres: bookRes.data.genres.map((g) => g.id),
+          publishDate: bookRes.data.publishDate || "", // <-- Add this line
         });
 
         // Fetch authors and genres
@@ -363,7 +365,16 @@ const EditBook = () => {
               ))}
             </Select>
           </FormControl>
-
+          <TextField
+            margin="normal"
+            fullWidth
+            label="Book Publish Date"
+            type="date"
+            name="publishDate"
+            InputLabelProps={{ shrink: true }}
+            value={formData.publishDate}
+            onChange={handleChange}
+          />
           <FormControl fullWidth margin="normal">
             <InputLabel>Genres</InputLabel>
             <Select

@@ -28,8 +28,13 @@ router.get('/', auth, async (req, res) => {
 // Add new author (Admin only)
 router.post('/', [auth, isAdmin], async (req, res) => {
   try {
-    const { name } = req.body;
-    
+    let { name, dob, countryOfBirth, dateOfDeath, bookPublishDate } = req.body;
+
+    // Convert "Invalid date" or empty string to null for date fields
+    dob = (!dob || dob === "Invalid date") ? null : dob;
+    dateOfDeath = (!dateOfDeath || dateOfDeath === "Invalid date") ? null : dateOfDeath;
+    bookPublishDate = (!bookPublishDate || bookPublishDate === "Invalid date") ? null : bookPublishDate;
+
     const authorExists = await Author.findOne({
       where: { name: { [Op.like]: name } }
     });
@@ -40,6 +45,10 @@ router.post('/', [auth, isAdmin], async (req, res) => {
 
     const author = await Author.create({
       name,
+      dob,
+      countryOfBirth,
+      dateOfDeath,
+      bookPublishDate,
       createdBy: req.user.id
     });
     res.status(201).json(author);
@@ -52,14 +61,26 @@ router.post('/', [auth, isAdmin], async (req, res) => {
 // Update author (Admin only)
 router.put('/:id', [auth, isAdmin], async (req, res) => {
   try {
-    const { name } = req.body;
+    let { name, dob, countryOfBirth, dateOfDeath, bookPublishDate } = req.body;
+
+    // Convert "Invalid date" or empty string to null for date fields
+    dob = (!dob || dob === "Invalid date") ? null : dob;
+    dateOfDeath = (!dateOfDeath || dateOfDeath === "Invalid date") ? null : dateOfDeath;
+    bookPublishDate = (!bookPublishDate || bookPublishDate === "Invalid date") ? null : bookPublishDate;
+
     const author = await Author.findByPk(req.params.id);
-    
     if (!author) {
       return res.status(404).json({ message: 'Author not found' });
     }
 
-    await author.update({ name });
+    await author.update({
+      name,
+      dob,
+      countryOfBirth,
+      dateOfDeath,
+      bookPublishDate
+    });
+
     res.json(author);
   } catch (error) {
     console.error('Error updating author:', error);

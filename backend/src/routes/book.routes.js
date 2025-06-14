@@ -42,7 +42,6 @@ router.get('/', auth, async (req, res) => {
 // Get user's favorite books (MUST come before /:id route)
 router.get('/favorites', auth, async (req, res) => {
   try {
-    // First get all favorited UserBook records for this user
     const favoriteUserBooks = await UserBook.findAll({
       where: {
         userId: req.user.id,
@@ -50,14 +49,12 @@ router.get('/favorites', auth, async (req, res) => {
       }
     });
 
-    // Extract book IDs
     const bookIds = favoriteUserBooks.map(userBook => userBook.bookId);
 
     if (bookIds.length === 0) {
       return res.json([]);
     }
 
-    // Get the books with their associations
     const favoriteBooks = await Book.findAll({
       where: {
         id: bookIds
@@ -117,7 +114,6 @@ router.get('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Book not found' });
     }
 
-    // Get user's specific data for this book
     const userBook = await UserBook.findOne({
       where: {
         userId: req.user.id,
@@ -125,7 +121,6 @@ router.get('/:id', auth, async (req, res) => {
       }
     });
 
-    // Add a flag to indicate if the user can edit/delete this book
     const canModify = req.user.role === 'admin' || book.createdBy === req.user.id;
 
     res.json({
@@ -157,15 +152,15 @@ router.post('/upload-cover', [auth, upload.single('coverImage')], async (req, re
 // Add new book
 router.post('/', auth, async (req, res) => {
   try {
-    const { title, description, coverImage, storeLink } = req.body;
+    const { title, description, coverImage, storeLink, publishDate } = req.body;
     let { authors, genres } = req.body;
     
-    // Create book
     const book = await Book.create({
       title,
       description,
       coverImage,
       storeLink,
+      publishDate, // <-- Save publishDate
       createdBy: req.user.id
     });
 
@@ -193,7 +188,6 @@ router.post('/', auth, async (req, res) => {
       }
     }
 
-    // Fetch the book with its associations
     const bookWithAssociations = await Book.findByPk(book.id, {
       include: [
         {
@@ -283,7 +277,6 @@ router.delete('/:bookId/reviews/:reviewId', auth, async (req, res) => {
       return res.status(404).json({ message: 'Review not found' });
     }
 
-    // Check if user is admin or review owner
     if (req.user.role !== 'admin' && review.userId !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this review' });
     }
@@ -305,20 +298,19 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Book not found' });
     }
 
-    // Check if user is admin or book creator
     if (req.user.role !== 'admin' && book.createdBy !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to update this book' });
     }
 
-    const { title, description, coverImage, storeLink } = req.body;
+    const { title, description, coverImage, storeLink, publishDate } = req.body;
     let { authors, genres } = req.body;
 
-    // Update basic book info
     await book.update({
       title: title || book.title,
       description: description || book.description,
       coverImage: coverImage || book.coverImage,
-      storeLink: storeLink !== undefined ? storeLink : book.storeLink
+      storeLink: storeLink !== undefined ? storeLink : book.storeLink,
+      publishDate: publishDate !== undefined ? publishDate : book.publishDate // <-- Save publishDate
     });
 
     // Update authors if provided
@@ -345,7 +337,6 @@ router.put('/:id', auth, async (req, res) => {
       }
     }
 
-    // Fetch the updated book with its associations
     const updatedBook = await Book.findByPk(book.id, {
       include: [
         {
@@ -377,7 +368,6 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ message: 'Book not found' });
     }
 
-    // Check if user is admin or book creator
     if (req.user.role !== 'admin' && book.createdBy !== req.user.id) {
       return res.status(403).json({ message: 'Not authorized to delete this book' });
     }
@@ -390,4 +380,4 @@ router.delete('/:id', auth, async (req, res) => {
   }
 });
 
-module.exports = router; 
+module.exports = router;

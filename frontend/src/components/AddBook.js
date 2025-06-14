@@ -41,6 +41,8 @@ const AddBook = () => {
     storeLink: "",
     authors: [],
     genres: [],
+    publishDate: "", // <-- Add this line
+
   });
   const [authors, setAuthors] = useState([]);
   const [genres, setGenres] = useState([]);
@@ -314,7 +316,16 @@ const AddBook = () => {
               ))}
             </Select>
           </FormControl>
-
+<TextField
+  margin="normal"
+  fullWidth
+  label="Book Publish Date"
+  type="date"
+  name="publishDate"
+  InputLabelProps={{ shrink: true }}
+  value={formData.publishDate}
+  onChange={handleChange}
+/>
           <FormControl fullWidth margin="normal">
             <InputLabel>Genres</InputLabel>
             <Select

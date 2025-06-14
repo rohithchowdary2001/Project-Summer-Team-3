@@ -40,6 +40,9 @@ const AdminDashboard = () => {
   const [editItem, setEditItem] = useState(null);
   const [newItemName, setNewItemName] = useState("");
   const [error, setError] = useState("");
+  const [newAuthorDob, setNewAuthorDob] = useState("");
+  const [newAuthorCountry, setNewAuthorCountry] = useState("");
+  const [newAuthorDeath, setNewAuthorDeath] = useState("");
 
   // Fetch authors, genres, users
   const fetchAuthors = async (query = "") => {
@@ -107,11 +110,16 @@ const AdminDashboard = () => {
     setDialogOpen(true);
   };
 
-  const handleEdit = (item) => {
-    setEditItem(item);
-    setNewItemName(item.name);
-    setDialogOpen(true);
-  };
+// In your AdminDashboard.js
+
+const handleEdit = (author) => {
+  setEditItem(author);
+  setNewItemName(author.name || "");
+  setNewAuthorDob(author.dob || "");
+  setNewAuthorCountry(author.countryOfBirth || "");
+  setNewAuthorDeath(author.dateOfDeath || "");
+  setDialogOpen(true);
+};
 
   const handleDelete = async (item) => {
     try {
@@ -131,48 +139,71 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!newItemName.trim()) return;
+const handleSubmit = async () => {
+  if (!newItemName.trim()) return;
 
-    try {
-      const token = localStorage.getItem("token");
-      const endpoint = tab === 0 ? "authors" : "genres";
+  try {
+    const token = localStorage.getItem("token");
+    const endpoint = tab === 0 ? "authors" : "genres";
 
-      if (editItem) {
-        const response = await axios.put(
-          `http://localhost:5000/api/${endpoint}/${editItem.id}`,
-          { name: newItemName },
-          { headers: { Authorization: `Bearer ${token}` } }
+    if (editItem) {
+      const payload =
+        tab === 0
+          ? {
+              name: newItemName,
+              dob: newAuthorDob,
+              countryOfBirth: newAuthorCountry,
+              dateOfDeath: newAuthorDeath,
+            }
+          : { name: newItemName };
+
+      const response = await axios.put(
+        `http://localhost:5000/api/${endpoint}/${editItem.id}`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (tab === 0) {
+        setAuthors(
+          authors.map((a) => (a.id === editItem.id ? response.data : a))
         );
-        if (tab === 0) {
-          setAuthors(
-            authors.map((a) => (a.id === editItem.id ? response.data : a))
-          );
-        } else {
-          setGenres(
-            genres.map((g) => (g.id === editItem.id ? response.data : g))
-          );
-        }
       } else {
-        const response = await axios.post(
-          `http://localhost:5000/api/${endpoint}`,
-          { name: newItemName },
-          { headers: { Authorization: `Bearer ${token}` } }
+        setGenres(
+          genres.map((g) => (g.id === editItem.id ? response.data : g))
         );
-        if (tab === 0) {
-          setAuthors([...authors, response.data]);
-        } else {
-          setGenres([...genres, response.data]);
-        }
       }
-      setDialogOpen(false);
-      setNewItemName("");
-      setEditItem(null);
-    } catch (err) {
-      console.error("Error submitting item:", err);
-      setError("Failed to save item");
+    } else {
+      const payload =
+        tab === 0
+          ? {
+              name: newItemName,
+              dob: newAuthorDob,
+              countryOfBirth: newAuthorCountry,
+              dateOfDeath: newAuthorDeath,
+            }
+          : { name: newItemName };
+
+      const response = await axios.post(
+        `http://localhost:5000/api/${endpoint}`,
+        payload,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (tab === 0) {
+        setAuthors([...authors, response.data]);
+      } else {
+        setGenres([...genres, response.data]);
+      }
     }
-  };
+    setDialogOpen(false);
+    setNewItemName("");
+    setEditItem(null);
+    setNewAuthorDob("");
+    setNewAuthorCountry("");
+    setNewAuthorDeath("");
+  } catch (err) {
+    console.error("Error submitting item:", err);
+    setError("Failed to save item");
+  }
+};
 
   // User delete handler
   const handleDeleteUser = async (userId) => {
@@ -197,7 +228,6 @@ const AdminDashboard = () => {
   return (
     <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
       <Paper sx={{ p: 2 }}>
-
         <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
           <Tabs value={tab} onChange={(e, newValue) => setTab(newValue)}>
             <Tab label="Authors" />
@@ -376,6 +406,35 @@ const AdminDashboard = () => {
             value={newItemName}
             onChange={(e) => setNewItemName(e.target.value)}
           />
+          {tab === 0 && (
+            <>
+              <TextField
+                margin="dense"
+                label="Date of Birth"
+                type="date"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={newAuthorDob}
+                onChange={(e) => setNewAuthorDob(e.target.value)}
+              />
+              <TextField
+                margin="dense"
+                label="Country of Birth"
+                fullWidth
+                value={newAuthorCountry}
+                onChange={(e) => setNewAuthorCountry(e.target.value)}
+              />
+              <TextField
+                margin="dense"
+                label="Date of Death"
+                type="date"
+                fullWidth
+                InputLabelProps={{ shrink: true }}
+                value={newAuthorDeath}
+                onChange={(e) => setNewAuthorDeath(e.target.value)}
+              />
+            </>
+          )}
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDialogOpen(false)}>Cancel</Button>

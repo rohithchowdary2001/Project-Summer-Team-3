@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Container,
   Grid,
@@ -23,7 +23,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-} from '@mui/material';
+} from "@mui/material";
 import {
   Favorite,
   FavoriteBorder,
@@ -31,28 +31,28 @@ import {
   Edit as EditIcon,
   Share as ShareIcon,
   Store as StoreIcon,
-} from '@mui/icons-material';
-import axios from 'axios';
+} from "@mui/icons-material";
+import axios from "axios";
 
 const BookDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [book, setBook] = useState(null);
   const [userStatus, setUserStatus] = useState({
-    readingStatus: 'not_started',
+    readingStatus: "not_started",
     readingProgress: 0,
     hasPhysicalCopy: false,
     isWishlisted: false,
   });
-  const [reviewContent, setReviewContent] = useState('');
+  const [reviewContent, setReviewContent] = useState("");
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [user, setUser] = useState(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
-    const userJson = localStorage.getItem('user');
+    const userJson = localStorage.getItem("user");
     if (userJson) {
       setUser(JSON.parse(userJson));
     }
@@ -60,19 +60,22 @@ const BookDetails = () => {
 
   const fetchBookDetails = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`http://localhost:5000/api/books/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const token = localStorage.getItem("token");
+      const response = await axios.get(
+        `http://localhost:5000/api/books/${id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       setBook(response.data);
       if (response.data.userStatus) {
         setUserStatus(response.data.userStatus);
       }
       setReviews(response.data.reviews || []);
-      setError('');
+      setError("");
     } catch (err) {
-      setError('Failed to fetch book details');
-      console.error('Error fetching book details:', err);
+      setError("Failed to fetch book details");
+      console.error("Error fetching book details:", err);
     } finally {
       setLoading(false);
     }
@@ -84,7 +87,7 @@ const BookDetails = () => {
 
   const handleStatusUpdate = async (updates) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         `http://localhost:5000/api/books/${id}/status`,
         { ...userStatus, ...updates },
@@ -92,8 +95,8 @@ const BookDetails = () => {
       );
       setUserStatus(response.data);
     } catch (err) {
-      console.error('Error updating status:', err);
-      setError('Failed to update status');
+      console.error("Error updating status:", err);
+      setError("Failed to update status");
     }
   };
 
@@ -101,49 +104,49 @@ const BookDetails = () => {
     if (!reviewContent.trim()) return;
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const response = await axios.post(
         `http://localhost:5000/api/books/${id}/reviews`,
         { content: reviewContent },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setReviews([...reviews, response.data]);
-      setReviewContent('');
+      setReviewContent("");
     } catch (err) {
-      console.error('Error submitting review:', err);
-      setError('Failed to submit review');
+      console.error("Error submitting review:", err);
+      setError("Failed to submit review");
     }
   };
 
   const handleDeleteReview = async (reviewId) => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       await axios.delete(
         `http://localhost:5000/api/books/${id}/reviews/${reviewId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
-      setReviews(reviews.filter(review => review.id !== reviewId));
+      setReviews(reviews.filter((review) => review.id !== reviewId));
     } catch (err) {
-      console.error('Error deleting review:', err);
-      setError('Failed to delete review');
+      console.error("Error deleting review:", err);
+      setError("Failed to delete review");
     }
   };
 
   const handleDeleteBook = async () => {
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       await axios.delete(`http://localhost:5000/api/books/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Error deleting book:', err);
-      setError('Failed to delete book');
+      console.error("Error deleting book:", err);
+      setError("Failed to delete book");
     }
   };
 
   const canModifyBook = () => {
-    return user?.role === 'admin' || book?.createdBy === user?.id;
+    return user?.role === "admin" || book?.createdBy === user?.id;
   };
 
   const handleShare = async () => {
@@ -151,29 +154,29 @@ const BookDetails = () => {
     try {
       await navigator.clipboard.writeText(bookUrl);
       // You could add a snackbar/toast notification here
-      alert('Book link copied to clipboard!');
+      alert("Book link copied to clipboard!");
     } catch (err) {
-      console.error('Failed to copy: ', err);
+      console.error("Failed to copy: ", err);
       // Fallback: select the text
-      const textArea = document.createElement('textarea');
+      const textArea = document.createElement("textarea");
       textArea.value = bookUrl;
       document.body.appendChild(textArea);
       textArea.select();
-      document.execCommand('copy');
+      document.execCommand("copy");
       document.body.removeChild(textArea);
-      alert('Book link copied to clipboard!');
+      alert("Book link copied to clipboard!");
     }
   };
 
   const handleStoreClick = () => {
     if (book?.storeLink) {
-      window.open(book.storeLink, '_blank');
+      window.open(book.storeLink, "_blank");
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <Typography>Loading book details...</Typography>
       </Box>
     );
@@ -181,7 +184,7 @@ const BookDetails = () => {
 
   if (error) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <Typography color="error">{error}</Typography>
       </Box>
     );
@@ -189,7 +192,7 @@ const BookDetails = () => {
 
   if (!book) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <Typography>Book not found</Typography>
       </Box>
     );
@@ -200,23 +203,29 @@ const BookDetails = () => {
       <Grid container spacing={4}>
         {/* Book Details */}
         <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 2, height: '100%' }}>
+          <Paper sx={{ p: 2, height: "100%" }}>
             <Box
               component="img"
-              src={book.coverImage || '/default-book-cover.jpg'}
+              src={book.coverImage || "/default-book-cover.jpg"}
               alt={book.title}
               sx={{
-                width: '100%',
+                width: "100%",
                 height: 400,
-                objectFit: 'cover',
-                mb: 2
+                objectFit: "cover",
+                mb: 2,
               }}
             />
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-              <Typography variant="h5">
-                {book.title}
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              
+              <Typography variant="h5">{book.title}</Typography>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <IconButton
                   onClick={handleShare}
                   title="Share book"
@@ -250,24 +259,51 @@ const BookDetails = () => {
                   </>
                 )}
               </Box>
+              
             </Box>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              By {book.authors?.map(author => author.name).join(', ')}
-            </Typography>
+            {book.authors?.map((author, idx) => (
+              <Box key={author.id} sx={{ mb: 1 }}>
+                <Typography variant="subtitle1" color="text.secondary">
+                  {`Author: ${author.name}`}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {author.dob ? `DOB: ${author.dob}` : ""}
+                  {author.countryOfBirth
+                    ? ` | Country: ${author.countryOfBirth}`
+                    : ""}
+                  {author.dateOfDeath ? ` | Died: ${author.dateOfDeath}` : ""}
+                  {author.bookPublishDate
+                    ? ` | Book Publish Date: ${author.bookPublishDate}`
+                    : ""}
+                </Typography>
+                {idx < book.authors.length - 1 && <Divider sx={{ my: 1 }} />}
+              </Box>
+            ))}
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Genres: {book.genres?.map(genre => genre.name).join(', ')}
+              Genres: {book.genres?.map((genre) => genre.name).join(", ")}
             </Typography>
             {book.createdBy === user?.id && (
-              <Typography variant="caption" color="text.secondary" display="block" gutterBottom>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                display="block"
+                gutterBottom
+              >
                 Added by you
               </Typography>
             )}
+            
             <Typography variant="body1" paragraph>
               {book.description}
             </Typography>
+            {book.publishDate && (
+  <Typography variant="body2" color="text.secondary" gutterBottom>
+    Publish Date: {book.publishDate}
+  </Typography>
+)}
           </Paper>
         </Grid>
-
+        
         {/* Reading Status and Progress */}
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 2, mb: 2 }}>
@@ -279,7 +315,9 @@ const BookDetails = () => {
               <Select
                 value={userStatus.readingStatus}
                 label="Status"
-                onChange={(e) => handleStatusUpdate({ readingStatus: e.target.value })}
+                onChange={(e) =>
+                  handleStatusUpdate({ readingStatus: e.target.value })
+                }
               >
                 <MenuItem value="not_started">Not Started</MenuItem>
                 <MenuItem value="in_progress">In Progress</MenuItem>
@@ -290,7 +328,9 @@ const BookDetails = () => {
             <Typography gutterBottom>Reading Progress</Typography>
             <Slider
               value={userStatus.readingProgress}
-              onChange={(e, value) => handleStatusUpdate({ readingProgress: value })}
+              onChange={(e, value) =>
+                handleStatusUpdate({ readingProgress: value })
+              }
               valueLabelDisplay="auto"
               step={1}
               marks
@@ -303,19 +343,24 @@ const BookDetails = () => {
                 control={
                   <Switch
                     checked={userStatus.hasPhysicalCopy}
-                    onChange={(e) => handleStatusUpdate({ hasPhysicalCopy: e.target.checked })}
+                    onChange={(e) =>
+                      handleStatusUpdate({ hasPhysicalCopy: e.target.checked })
+                    }
                   />
                 }
                 label="I own this book"
               />
               <IconButton
-                onClick={() => handleStatusUpdate({ isWishlisted: !userStatus.isWishlisted })}
-                color={userStatus.isWishlisted ? 'error' : 'default'}
+                onClick={() =>
+                  handleStatusUpdate({ isWishlisted: !userStatus.isWishlisted })
+                }
+                color={userStatus.isWishlisted ? "error" : "default"}
               >
                 {userStatus.isWishlisted ? <Favorite /> : <FavoriteBorder />}
               </IconButton>
             </Box>
           </Paper>
+          
 
           {/* Reviews Section */}
           <Paper sx={{ p: 2 }}>
@@ -332,7 +377,7 @@ const BookDetails = () => {
                 onChange={(e) => setReviewContent(e.target.value)}
                 sx={{ mb: 1 }}
               />
-              <Box sx={{ display: 'flex', gap: 1 }}>
+              <Box sx={{ display: "flex", gap: 1 }}>
                 <Button
                   variant="contained"
                   onClick={handleReviewSubmit}
@@ -348,7 +393,13 @@ const BookDetails = () => {
             {reviews.map((review) => (
               <Card key={review.id} sx={{ mb: 2 }}>
                 <CardContent>
-                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <Box>
                       <Typography variant="subtitle2">
                         {review.user.username}
@@ -357,11 +408,16 @@ const BookDetails = () => {
                         {new Date(review.createdAt).toLocaleDateString()}
                       </Typography>
                     </Box>
-                    {(review.user.id === user?.id || user?.role === 'admin') && (
+                    {(review.user.id === user?.id ||
+                      user?.role === "admin") && (
                       <IconButton
                         size="small"
                         onClick={() => handleDeleteReview(review.id)}
-                        title={user?.role === 'admin' && review.user.id !== user?.id ? 'Delete review (Admin)' : 'Delete your review'}
+                        title={
+                          user?.role === "admin" && review.user.id !== user?.id
+                            ? "Delete review (Admin)"
+                            : "Delete your review"
+                        }
                       >
                         <DeleteIcon />
                       </IconButton>
@@ -391,7 +447,8 @@ const BookDetails = () => {
         <DialogTitle>Delete Book</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete "{book.title}"? This action cannot be undone.
+            Are you sure you want to delete "{book.title}"? This action cannot
+            be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -405,4 +462,4 @@ const BookDetails = () => {
   );
 };
 
-export default BookDetails; 
+export default BookDetails;

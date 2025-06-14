@@ -23,6 +23,10 @@ const Book = sequelize.define('Book', {
     type: DataTypes.TEXT,
     allowNull: true
   },
+  publishDate: {                // <-- Add this block
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
   createdBy: {
     type: DataTypes.INTEGER,
     allowNull: false,

@@ -12,6 +12,22 @@ const Author = sequelize.define('Author', {
     allowNull: false,
     unique: true
   },
+  dob: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  countryOfBirth: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  dateOfDeath: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  bookPublishDate: {
+    type: DataTypes.DATEONLY,
+    allowNull: true
+  },
   createdBy: {
     type: DataTypes.INTEGER,
     allowNull: false,
@@ -22,4 +38,4 @@ const Author = sequelize.define('Author', {
   }
 });
 
-module.exports = Author; 
+module.exports = Author;
