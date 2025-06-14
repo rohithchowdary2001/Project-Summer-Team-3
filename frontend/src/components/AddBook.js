@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Container,
   Paper,
@@ -17,9 +17,9 @@ import {
   Tabs,
   Tab,
   CircularProgress,
-} from '@mui/material';
-import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
-import axios from 'axios';
+} from "@mui/material";
+import { CloudUpload as CloudUploadIcon } from "@mui/icons-material";
+import axios from "axios";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -35,36 +35,38 @@ const MenuProps = {
 const AddBook = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    coverImage: '',
-    storeLink: '',
+    title: "",
+    description: "",
+    coverImage: "",
+    storeLink: "",
     authors: [],
     genres: [],
   });
   const [authors, setAuthors] = useState([]);
   const [genres, setGenres] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [imageTab, setImageTab] = useState(0); // 0 for URL, 1 for upload
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [authorsOpen, setAuthorsOpen] = useState(false);
+  const [genresOpen, setGenresOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        
+
         const [authorsRes, genresRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/authors', { headers }),
-          axios.get('http://localhost:5000/api/genres', { headers })
+          axios.get("http://localhost:5000/api/authors", { headers }),
+          axios.get("http://localhost:5000/api/genres", { headers }),
         ]);
 
         setAuthors(authorsRes.data);
         setGenres(genresRes.data);
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to fetch authors and genres');
+        console.error("Error fetching data:", err);
+        setError("Failed to fetch authors and genres");
       }
     };
 
@@ -73,9 +75,9 @@ const AddBook = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -87,24 +89,28 @@ const AddBook = () => {
     setUploading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const formData = new FormData();
-      formData.append('coverImage', file);
+      formData.append("coverImage", file);
 
-      const response = await axios.post('http://localhost:5000/api/books/upload-cover', formData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        "http://localhost:5000/api/books/upload-cover",
+        formData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
-      });
+      );
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        coverImage: response.data.imageUrl
+        coverImage: response.data.imageUrl,
       }));
     } catch (err) {
-      console.error('Error uploading file:', err);
-      setError('Failed to upload image');
+      console.error("Error uploading file:", err);
+      setError("Failed to upload image");
     } finally {
       setUploading(false);
     }
@@ -117,30 +123,34 @@ const AddBook = () => {
       setSelectedFile(null);
     } else {
       // Switching to upload tab, clear URL
-      setFormData(prev => ({ ...prev, coverImage: '' }));
+      setFormData((prev) => ({ ...prev, coverImage: "" }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    try {
-      const token = localStorage.getItem('token');
-      await axios.post('http://localhost:5000/api/books', {
-        ...formData,
-        authors: JSON.stringify(formData.authors),
-        genres: JSON.stringify(formData.genres)
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
 
-      navigate('/dashboard');
+    try {
+      const token = localStorage.getItem("token");
+      await axios.post(
+        "http://localhost:5000/api/books",
+        {
+          ...formData,
+          authors: JSON.stringify(formData.authors),
+          genres: JSON.stringify(formData.genres),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Error adding book:', err);
-      setError('Failed to add book');
+      console.error("Error adding book:", err);
+      setError("Failed to add book");
     }
   };
 
@@ -205,12 +215,18 @@ const AddBook = () => {
                 <Button
                   variant="outlined"
                   component="label"
-                  startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                  startIcon={
+                    uploading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <CloudUploadIcon />
+                    )
+                  }
                   disabled={uploading}
                   fullWidth
                   sx={{ mb: 2 }}
                 >
-                  {uploading ? 'Uploading...' : 'Choose Image File'}
+                  {uploading ? "Uploading..." : "Choose Image File"}
                   <input
                     type="file"
                     hidden
@@ -229,12 +245,22 @@ const AddBook = () => {
             {formData.coverImage && (
               <Box sx={{ mt: 2 }}>
                 <img
-                  src={formData.coverImage}
+                  src={
+                    formData.coverImage
+                      ? formData.coverImage
+                      : "/default-book-cover.jpg"
+                  }
                   alt="Cover preview"
-                  style={{ maxWidth: '200px', maxHeight: '300px', display: 'block' }}
+                  style={{
+                    maxWidth: "200px",
+                    maxHeight: "300px",
+                    display: "block",
+                  }}
                   onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-book-cover.jpg';
+                    if (!e.target._hasError) {
+                      e.target._hasError = true;
+                      e.target.src = "/default-book-cover.jpg";
+                    }
                   }}
                 />
               </Box>
@@ -256,16 +282,25 @@ const AddBook = () => {
             <InputLabel>Authors</InputLabel>
             <Select
               multiple
+              open={authorsOpen}
+              onOpen={() => setAuthorsOpen(true)}
+              onClose={() => setAuthorsOpen(false)}
               value={formData.authors}
-              onChange={handleChange}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  authors: e.target.value,
+                }));
+                setAuthorsOpen(false); // Close after selection
+              }}
               input={<OutlinedInput label="Authors" />}
               name="authors"
               renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((authorId) => (
                     <Chip
                       key={authorId}
-                      label={authors.find(a => a.id === authorId)?.name}
+                      label={authors.find((a) => a.id === authorId)?.name}
                     />
                   ))}
                 </Box>
@@ -284,16 +319,25 @@ const AddBook = () => {
             <InputLabel>Genres</InputLabel>
             <Select
               multiple
+              open={genresOpen}
+              onOpen={() => setGenresOpen(true)}
+              onClose={() => setGenresOpen(false)}
               value={formData.genres}
-              onChange={handleChange}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  genres: e.target.value,
+                }));
+                setGenresOpen(false); // Close after selection
+              }}
               input={<OutlinedInput label="Genres" />}
               name="genres"
               renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((genreId) => (
                     <Chip
                       key={genreId}
-                      label={genres.find(g => g.id === genreId)?.name}
+                      label={genres.find((g) => g.id === genreId)?.name}
                     />
                   ))}
                 </Box>
@@ -313,7 +357,12 @@ const AddBook = () => {
               type="submit"
               variant="contained"
               fullWidth
-              disabled={!formData.title || !formData.description || formData.authors.length === 0 || formData.genres.length === 0}
+              disabled={
+                !formData.title ||
+                !formData.description ||
+                formData.authors.length === 0 ||
+                formData.genres.length === 0
+              }
             >
               Add Book
             </Button>
@@ -324,4 +373,4 @@ const AddBook = () => {
   );
 };
 
-export default AddBook; 
+export default AddBook;

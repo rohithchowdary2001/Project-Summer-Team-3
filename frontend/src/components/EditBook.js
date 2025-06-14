@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
   Container,
   Paper,
@@ -17,9 +17,9 @@ import {
   Tabs,
   Tab,
   CircularProgress,
-} from '@mui/material';
-import { CloudUpload as CloudUploadIcon } from '@mui/icons-material';
-import axios from 'axios';
+} from "@mui/material";
+import { CloudUpload as CloudUploadIcon } from "@mui/icons-material";
+import axios from "axios";
 
 const ITEM_HEIGHT = 48;
 const ITEM_PADDING_TOP = 8;
@@ -36,24 +36,26 @@ const EditBook = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    coverImage: '',
-    storeLink: '',
+    title: "",
+    description: "",
+    coverImage: "",
+    storeLink: "",
     authors: [],
-    genres: []
+    genres: [],
   });
   const [authors, setAuthors] = useState([]);
   const [genres, setGenres] = useState([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
   const [imageTab, setImageTab] = useState(0);
   const [uploading, setUploading] = useState(false);
   const [selectedFile, setSelectedFile] = useState(null);
+  const [authorsOpen, setAuthorsOpen] = useState(false);
+  const [genresOpen, setGenresOpen] = useState(false);
 
   useEffect(() => {
-    const userJson = localStorage.getItem('user');
+    const userJson = localStorage.getItem("user");
     if (userJson) {
       setUser(JSON.parse(userJson));
     }
@@ -62,44 +64,49 @@ const EditBook = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem("token");
         const headers = { Authorization: `Bearer ${token}` };
-        
+
         // Fetch book details
-        const bookRes = await axios.get(`http://localhost:5000/api/books/${id}`, { headers });
-        
+        const bookRes = await axios.get(
+          `http://localhost:5000/api/books/${id}`,
+          { headers }
+        );
+
         // Check if user has permission to edit this book
-        const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-        const canEdit = currentUser.role === 'admin' || bookRes.data.createdBy === currentUser.id;
-        
+        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
+        const canEdit =
+          currentUser.role === "admin" ||
+          bookRes.data.createdBy === currentUser.id;
+
         if (!canEdit) {
-          setError('You do not have permission to edit this book');
+          setError("You do not have permission to edit this book");
           setLoading(false);
-          setTimeout(() => navigate('/dashboard'), 2000);
+          setTimeout(() => navigate("/dashboard"), 2000);
           return;
         }
-        
+
         setFormData({
           title: bookRes.data.title,
           description: bookRes.data.description,
           coverImage: bookRes.data.coverImage,
-          storeLink: bookRes.data.storeLink || '',
-          authors: bookRes.data.authors.map(a => a.id),
-          genres: bookRes.data.genres.map(g => g.id)
+          storeLink: bookRes.data.storeLink || "",
+          authors: bookRes.data.authors.map((a) => a.id),
+          genres: bookRes.data.genres.map((g) => g.id),
         });
 
         // Fetch authors and genres
         const [authorsRes, genresRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/authors', { headers }),
-          axios.get('http://localhost:5000/api/genres', { headers })
+          axios.get("http://localhost:5000/api/authors", { headers }),
+          axios.get("http://localhost:5000/api/genres", { headers }),
         ]);
 
         setAuthors(authorsRes.data);
         setGenres(genresRes.data);
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to fetch book data');
+        console.error("Error fetching data:", err);
+        setError("Failed to fetch book data");
         setLoading(false);
       }
     };
@@ -111,9 +118,9 @@ const EditBook = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -125,24 +132,28 @@ const EditBook = () => {
     setUploading(true);
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem("token");
       const uploadFormData = new FormData();
-      uploadFormData.append('coverImage', file);
+      uploadFormData.append("coverImage", file);
 
-      const response = await axios.post('http://localhost:5000/api/books/upload-cover', uploadFormData, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'multipart/form-data'
+      const response = await axios.post(
+        "http://localhost:5000/api/books/upload-cover",
+        uploadFormData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
-      });
+      );
 
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        coverImage: response.data.imageUrl
+        coverImage: response.data.imageUrl,
       }));
     } catch (err) {
-      console.error('Error uploading file:', err);
-      setError('Failed to upload image');
+      console.error("Error uploading file:", err);
+      setError("Failed to upload image");
     } finally {
       setUploading(false);
     }
@@ -153,30 +164,34 @@ const EditBook = () => {
     if (newValue === 0) {
       setSelectedFile(null);
     } else {
-      setFormData(prev => ({ ...prev, coverImage: '' }));
+      setFormData((prev) => ({ ...prev, coverImage: "" }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    try {
-      const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:5000/api/books/${id}`, {
-        ...formData,
-        authors: JSON.stringify(formData.authors),
-        genres: JSON.stringify(formData.genres)
-      }, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
 
-      navigate('/dashboard');
+    try {
+      const token = localStorage.getItem("token");
+      await axios.put(
+        `http://localhost:5000/api/books/${id}`,
+        {
+          ...formData,
+          authors: JSON.stringify(formData.authors),
+          genres: JSON.stringify(formData.genres),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      navigate("/dashboard");
     } catch (err) {
-      console.error('Error updating book:', err);
-      setError('Failed to update book');
+      console.error("Error updating book:", err);
+      setError("Failed to update book");
     }
   };
 
@@ -249,12 +264,18 @@ const EditBook = () => {
                 <Button
                   variant="outlined"
                   component="label"
-                  startIcon={uploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+                  startIcon={
+                    uploading ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <CloudUploadIcon />
+                    )
+                  }
                   disabled={uploading}
                   fullWidth
                   sx={{ mb: 2 }}
                 >
-                  {uploading ? 'Uploading...' : 'Choose Image File'}
+                  {uploading ? "Uploading..." : "Choose Image File"}
                   <input
                     type="file"
                     hidden
@@ -273,12 +294,22 @@ const EditBook = () => {
             {formData.coverImage && (
               <Box sx={{ mt: 2 }}>
                 <img
-                  src={formData.coverImage}
+                  src={
+                    formData.coverImage
+                      ? formData.coverImage
+                      : "/default-book-cover.jpg"
+                  }
                   alt="Cover preview"
-                  style={{ maxWidth: '200px', maxHeight: '300px', display: 'block' }}
+                  style={{
+                    maxWidth: "200px",
+                    maxHeight: "300px",
+                    display: "block",
+                  }}
                   onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = '/default-book-cover.jpg';
+                    if (!e.target._hasError) {
+                      e.target._hasError = true;
+                      e.target.src = "/default-book-cover.jpg";
+                    }
                   }}
                 />
               </Box>
@@ -300,16 +331,25 @@ const EditBook = () => {
             <InputLabel>Authors</InputLabel>
             <Select
               multiple
+              open={authorsOpen}
+              onOpen={() => setAuthorsOpen(true)}
+              onClose={() => setAuthorsOpen(false)}
               value={formData.authors}
-              onChange={handleChange}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  authors: e.target.value,
+                }));
+                setAuthorsOpen(false); // Close after selection
+              }}
               input={<OutlinedInput label="Authors" />}
               name="authors"
               renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((authorId) => (
                     <Chip
                       key={authorId}
-                      label={authors.find(a => a.id === authorId)?.name}
+                      label={authors.find((a) => a.id === authorId)?.name}
                     />
                   ))}
                 </Box>
@@ -328,16 +368,25 @@ const EditBook = () => {
             <InputLabel>Genres</InputLabel>
             <Select
               multiple
+              open={genresOpen}
+              onOpen={() => setGenresOpen(true)}
+              onClose={() => setGenresOpen(false)}
               value={formData.genres}
-              onChange={handleChange}
+              onChange={(e) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  genres: e.target.value,
+                }));
+                setGenresOpen(false); // Close after selection
+              }}
               input={<OutlinedInput label="Genres" />}
               name="genres"
               renderValue={(selected) => (
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                   {selected.map((genreId) => (
                     <Chip
                       key={genreId}
-                      label={genres.find(g => g.id === genreId)?.name}
+                      label={genres.find((g) => g.id === genreId)?.name}
                     />
                   ))}
                 </Box>
@@ -352,18 +401,23 @@ const EditBook = () => {
             </Select>
           </FormControl>
 
-          <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
+          <Box sx={{ mt: 3, display: "flex", gap: 2 }}>
             <Button
               type="button"
               variant="outlined"
-              onClick={() => navigate('/dashboard')}
+              onClick={() => navigate("/dashboard")}
             >
               Cancel
             </Button>
             <Button
               type="submit"
               variant="contained"
-              disabled={!formData.title || !formData.description || formData.authors.length === 0 || formData.genres.length === 0}
+              disabled={
+                !formData.title ||
+                !formData.description ||
+                formData.authors.length === 0 ||
+                formData.genres.length === 0
+              }
             >
               Save Changes
             </Button>
@@ -374,4 +428,4 @@ const EditBook = () => {
   );
 };
 
-export default EditBook; 
+export default EditBook;

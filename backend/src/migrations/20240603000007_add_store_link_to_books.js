@@ -2,14 +2,15 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    await queryInterface.addColumn('Books', 'storeLink', {
-      type: Sequelize.STRING,
+    await queryInterface.changeColumn('Books', 'storeLink', {
+      type: Sequelize.TEXT,
       allowNull: true,
-      defaultValue: null
     });
   },
-
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.removeColumn('Books', 'storeLink');
+    await queryInterface.changeColumn('Books', 'storeLink', {
+      type: Sequelize.STRING,
+      allowNull: true,
+    });
   }
-}; 
+};

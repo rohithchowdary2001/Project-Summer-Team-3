@@ -20,7 +20,7 @@ const Book = sequelize.define('Book', {
     allowNull: true
   },
   storeLink: {
-    type: DataTypes.STRING,
+    type: DataTypes.TEXT,
     allowNull: true
   },
   createdBy: {
